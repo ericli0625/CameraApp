@@ -1,0 +1,26 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="com.example.erichc_li.cameraapp.MainActivity">
+    <item
+        android:id="@+id/Pic_size1"
+        android:orderInCategory="100"
+        android:title="@string/Pic_size1"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/Pic_size2"
+        android:orderInCategory="100"
+        android:title="@string/Pic_size2"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/Pic_size3"
+        android:orderInCategory="100"
+        android:title="@string/Pic_size3"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/Pic_size4"
+        android:orderInCategory="100"
+        android:title="@string/Pic_size4"
+        app:showAsAction="never"/>
+
+</menu>

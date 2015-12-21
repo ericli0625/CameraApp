@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">CameraAPP</string>
+    <string name="action_settings">Settings</string>
+    <string name="Pic_size1">4096*3072</string>
+    <string name="Pic_size2">1920*1080</string>
+    <string name="Pic_size3">800*480</string>
+    <string name="Pic_size4">320*240</string>
+
+</resources>
