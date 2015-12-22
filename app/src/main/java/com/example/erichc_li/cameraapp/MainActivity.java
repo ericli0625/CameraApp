@@ -3,12 +3,14 @@ package com.example.erichc_li.cameraapp;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -129,11 +131,20 @@ public class MainActivity extends AppCompatActivity {
                 pictureTaken.recycle();
                 fos.write(jpeg[0]);
                 fos.close();
+                galleryAddPic(photoPath);
             } catch (java.io.IOException e) {
                 Log.e(TAG, "Exception in photoCallback", e);
             }
             return (null);
         }
+    }
+
+    private void galleryAddPic(File photoPath) {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = photoPath;
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
     }
 
     private File getOutputMediaFile() {
