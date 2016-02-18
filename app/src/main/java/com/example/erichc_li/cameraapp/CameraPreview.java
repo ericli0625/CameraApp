@@ -21,28 +21,28 @@ import java.util.List;
 public class CameraPreview extends TextureView implements TextureView.SurfaceTextureListener, SensorEventListener {
 
     private static final String TAG = CameraPreview.class.getName();
-    private final int mRotation;
     private SensorManager mSensorManager;
     private Context mContext;
-    private Camera mCamera;
+    private CameraManager mCameraManager;
     public boolean inPreview = false;
     private SurfaceTexture mSurface;
     private int maxZoomLevel;
     private float oldDis;
     private boolean zoom = false;
+    private Sensor aSensor;
 
     Handler handler = new Handler();
     AutoFocusThread autofocusThread = new AutoFocusThread();
     private boolean mInitialized;
     private float mLastX,mLastY,mLastZ;
 
-    public CameraPreview(Context context,Camera camera,int rotation,Sensor aSensor, SensorManager sm) {
+    public CameraPreview(Context context,CameraManager camera) {
         super(context);
         mContext = context;
-        mCamera = camera;
-        mRotation = rotation;
+        mCameraManager = camera;
         this.setSurfaceTextureListener(this);
-        mSensorManager = sm;
+        mSensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
+        aSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensorManager.registerListener(this, aSensor, SensorManager.SENSOR_DELAY_UI);
     }
 
@@ -52,13 +52,13 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
 
         mSurface = surface;
 
-        if (mCamera != null) {
+        if (mCameraManager.getCamera() != null) {
             try {
                 Log.i(TAG, "StartPreview...");
 
-                Camera.Parameters parameters = mCamera.getParameters();
+                Camera.Parameters parameters = mCameraManager.getCameraParameters();
 
-                setCameraDisplayOrientation(mRotation, 0, mCamera, parameters);
+                mCameraManager.setCameraDisplayOrientation(0, parameters);
 
                 //handler.post(autofocusThread);
 
@@ -70,10 +70,10 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
 */
                 parameters.setPictureSize(psSize.get(0).width, psSize.get(0).height);
 
-                mCamera.setParameters(parameters);
+                mCameraManager.setCameraParameters(parameters);
 
-                mCamera.setPreviewTexture(mSurface);
-                mCamera.startPreview();
+                mCameraManager.setPreviewTexture(mSurface);
+                mCameraManager.startPreview();
 
                 inPreview = true;
 
@@ -83,31 +83,7 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
         } else {
             Log.i(TAG, "onSurfaceTextureAvailable, mCamera is null");
         }
-
-    }
-
-    public static void setCameraDisplayOrientation(int mRotation, int cameraId, android.hardware.Camera camera,Camera.Parameters parameters) {
-        android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
-        android.hardware.Camera.getCameraInfo(cameraId, info);
-
-        int degrees = 0;
-        switch (mRotation) {
-            case Surface.ROTATION_0: degrees = 0; break;
-            case Surface.ROTATION_90: degrees = 90; break;
-            case Surface.ROTATION_180: degrees = 180; break;
-            case Surface.ROTATION_270: degrees = 270; break;
-        }
-
-        int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;  // compensate the mirror
-        } else {  // back-facing
-            result = (info.orientation - degrees + 360) % 360;
-        }
-        camera.setDisplayOrientation(result);
-        parameters.setRotation(result);
-
+        mCameraManager.ShowWhatView("CameraPreview");
     }
 
     @Override
@@ -117,27 +93,27 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
         // stop preview before making changes
 
         try {
-            mCamera.stopPreview();
+            mCameraManager.stopPreview();
         } catch (Exception ioe) {
             ioe.printStackTrace();
         }
 
         try {
-            mCamera.setPreviewTexture(mSurface);
-            mCamera.startPreview();
+            mCameraManager.setPreviewTexture(mSurface);
+            mCameraManager.startPreview();
 
         } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
 
         }
-        Log.i(TAG, "getFocusMode() = " + mCamera.getParameters().getFocusMode());
+        Log.i(TAG, "getFocusMode() = " + mCameraManager.getCameraParameters().getFocusMode());
 
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         Log.i(TAG, "onSurfaceTextureDestroyed...");
-        mCamera.stopPreview();
+        mCameraManager.stopPreview();
         //handler.removeCallbacks(autofocusThread);
         mSensorManager.unregisterListener(this);
         inPreview = false;
@@ -152,16 +128,16 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         //Log.i(TAG, "onTouchEvent()...");
-        Camera.Parameters parameters = mCamera.getParameters();
+        Camera.Parameters parameters = mCameraManager.getCameraParameters();
         int action = event.getAction() & MotionEvent.ACTION_MASK;
-        MainActivity.mFrameLayout2.removeAllViews();
+        //MainActivity.mFrameLayout2.removeAllViews();
 
 
         if (event.getPointerCount() > 1) {
                 if (action == MotionEvent.ACTION_POINTER_DOWN) {
                         oldDis = getFingerSpacing(event);
                 } else if (action == MotionEvent.ACTION_MOVE && parameters.isZoomSupported()) {
-                        mCamera.cancelAutoFocus();
+                        mCameraManager.cancelAutoFocus();
                         handleZoom(event);
                 }
         } else {
@@ -175,7 +151,7 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
 
     private void handleZoom(MotionEvent event) {
 
-        Camera.Parameters params = mCamera.getParameters();
+        Camera.Parameters params = mCameraManager.getCameraParameters();
         maxZoomLevel = params.getMaxZoom();
         int zoomValue = params.getZoom();
         float newDis = getFingerSpacing(event);
@@ -196,7 +172,7 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
         zoom = true;
         oldDis = newDis;
         params.setZoom(zoomValue);
-        mCamera.setParameters(params);
+        mCameraManager.setCameraParameters(params);
     }
 
     public void handleFocus(MotionEvent event,int action) {
@@ -207,7 +183,7 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
         final float y = event.getY(pointerIndex);
         //Log.i(TAG, "x = " + x + ", y = " + y);
 
-        Camera.Parameters params = mCamera.getParameters();
+        Camera.Parameters params = mCameraManager.getCameraParameters();
 
         List<String> supportedFocusModes = params.getSupportedFocusModes();
         if (supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
@@ -233,33 +209,17 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
 
             if (action == MotionEvent.ACTION_UP && zoom != true) {
                 SquareView mSquareView = new SquareView(mContext, x, y);
-                MainActivity.mFrameLayout2.addView(mSquareView);
+//                MainActivity.mFrameLayout2.addView(mSquareView);
             } else if (action == MotionEvent.ACTION_DOWN && zoom == true){
                 zoom = false;
             }
 
-            mCamera.setParameters(params);
-            mCamera.autoFocus(myAutoFocusCallback);
+            mCameraManager.setCameraParameters(params);
+            //mCameraManager.autoFocus();
 
         }
 
     }
-
-    Camera.AutoFocusCallback myAutoFocusCallback = new Camera.AutoFocusCallback() {
-
-        @Override
-        public void onAutoFocus(boolean success, Camera camera) {
-            // currently set to auto-focus on single touch
-            if(success){
-                Log.i(TAG, "聚焦成功...");
-                MainActivity.mFrameLayout2.removeAllViews();
-            } else {
-                Log.i(TAG, "聚焦失敗...");
-                MainActivity.mFrameLayout2.removeAllViews();
-            }
-
-        }
-    };
 
     @Override
     public void onSensorChanged(SensorEvent arg0) {
@@ -283,7 +243,7 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
         if(deltaX > 1 || deltaY > 1 || deltaZ > 1){
             //Log.i(TAG, "deltaX = "+deltaX+", deltaY = "+deltaY+", deltaZ = "+deltaZ);
             //Log.i(TAG, "onSensorChanged 聚焦成功...");
-            mCamera.autoFocus(myAutoFocusCallback);
+            //mCameraManager.autoFocus();
         }
 
         mLastX = x;
@@ -299,7 +259,7 @@ public class CameraPreview extends TextureView implements TextureView.SurfaceTex
     public class AutoFocusThread extends Thread{
         public void run(){
             Log.i(TAG, "AutoFocusThread 聚焦成功...");
-            mCamera.autoFocus(myAutoFocusCallback);
+            mCameraManager.autoFocus();
             handler.postDelayed(autofocusThread,2500);
         }
     }
