@@ -1,15 +1,8 @@
 package com.example.erichc_li.cameraapp;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-
-import android.hardware.Camera;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
-
 import android.os.Bundle;
-
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -18,8 +11,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-
 import android.widget.FrameLayout;
+
+import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
+import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
+import com.example.erichc_li.cameraapp.Preview.GLSurfaceViewPreview;
+import com.example.erichc_li.cameraapp.Preview.OthersPreview;
+import com.example.erichc_li.cameraapp.Preview.SurfaceViewPreview;
+import com.example.erichc_li.cameraapp.Preview.TextureViewPreview;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -48,16 +47,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mFrameLayout = (FrameLayout) findViewById(R.id.camera_textureview);
-//        mFrameLayout2 = (FrameLayout) findViewById(R.id.camera_textureview2);
-
-        mCameraManager = new CameraManager(this);
+        mFrameLayout2 = (FrameLayout) findViewById(R.id.camera_textureview2);
 
         defaultView();
 
     }
 
     public void defaultView(){
-        mPreview = new TextureViewPreview (this, mCameraManager);
+        mCameraManager = new CameraManager(this);
+        mPreview = new TextureViewPreview(this, mCameraManager, R.id.Pic_size1);
         mFrameLayout.addView(mPreview);
     }
 
@@ -80,19 +78,23 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         switch (id) {
             case R.id.Pic_size1:
-                mPreview = new TextureViewPreview (this, mCameraManager);
+                mCameraManager = new CameraManager(this);
+                mPreview = new TextureViewPreview (this, mCameraManager,R.id.Pic_size1);
                 mFrameLayout.addView(mPreview);
                 return true;
             case R.id.Pic_size2:
-                mPreview = new SurfaceViewPreview (this, mCameraManager);
+                mCameraManager = new CameraManager(this);
+                mPreview = new SurfaceViewPreview(this, mCameraManager,R.id.Pic_size2);
                 mFrameLayout.addView(mPreview);
                 return true;
             case R.id.Pic_size3:
-                mPreview = new GLSurfaceViewPreview (this, mCameraManager);
+                mCameraManager = new CameraManager(this);
+                mPreview = new GLSurfaceViewPreview(this, mCameraManager,R.id.Pic_size3);
                 mFrameLayout.addView(mPreview);
                 return true;
             case R.id.Pic_size4:
-                mPreview = new CameraPreview(this, mCameraManager);
+                mCameraManager = new CameraSensorManager(this);
+                mPreview = new OthersPreview(this, (CameraSensorManager) mCameraManager,R.id.Pic_size4);
                 mFrameLayout.addView(mPreview);
                 return true;
             default:

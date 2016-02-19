@@ -1,4 +1,4 @@
-package com.example.erichc_li.cameraapp;
+package com.example.erichc_li.cameraapp.CameraBase;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,6 +16,8 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.widget.Toast;
 
+import com.example.erichc_li.cameraapp.MainActivity;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,13 +29,11 @@ public class CameraManager {
     private static final String TAG = CameraManager.class.getName();
     private final Context mContext;
 
-    Activity activity;
-
     Camera mCamera;
     Camera.Parameters parameters;
     private int mRotation;
 
-    CameraManager(Context context) {
+    public CameraManager(Context context) {
         mContext = context;
         mCamera = getCameraInstance();
     }
@@ -47,7 +47,6 @@ public class CameraManager {
         }
         return c;
     }
-
 
     public void setCameraDisplayOrientation(int cameraId, Camera.Parameters parameters) {
         android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();

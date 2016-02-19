@@ -5,6 +5,6 @@
     <string name="Pic_size1">TextureView</string>
     <string name="Pic_size2">SurfaceView</string>
     <string name="Pic_size3">GLSurfaceView</string>
-    <string name="Pic_size4">CameraPreview</string>
+    <string name="Pic_size4">SensorFocus</string>
 
 </resources>
