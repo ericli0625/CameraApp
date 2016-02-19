@@ -20,6 +20,8 @@ import com.example.erichc_li.cameraapp.Preview.OthersPreview;
 import com.example.erichc_li.cameraapp.Preview.SurfaceViewPreview;
 import com.example.erichc_li.cameraapp.Preview.TextureViewPreview;
 
+import java.io.IOException;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,15 +51,9 @@ public class MainActivity extends AppCompatActivity {
         mFrameLayout = (FrameLayout) findViewById(R.id.camera_textureview);
         mFrameLayout2 = (FrameLayout) findViewById(R.id.camera_textureview2);
 
-        defaultView();
-
     }
 
-    public void defaultView(){
-        mCameraManager = new CameraManager(this);
-        mPreview = new TextureViewPreview(this, mCameraManager, R.id.Pic_size1);
-        mFrameLayout.addView(mPreview);
-    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -108,17 +104,33 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.i(TAG, "onResume()...");
+
+        mCameraManager = new CameraManager(this);
+        mPreview = new TextureViewPreview(this, mCameraManager, R.id.Pic_size1);
+        mFrameLayout.addView(mPreview);
+
     }
 
     @Override
     protected void onPause(){
         super.onPause();
         Log.i(TAG, "onPause()...");
-
     }
 
     @Override
-    protected void onStop(){
+    protected void onStart(){
+        super.onStart();
+        Log.i(TAG, "onStart()...");
+    }
+
+    @Override
+    protected void onRestart(){
+        super.onRestart();
+        Log.i(TAG, "onRestart()...");
+    }
+
+    @Override
+    protected void onStop() {
         super.onStop();
         Log.i(TAG, "onStop()...");
     }
@@ -127,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy(){
         super.onDestroy();
         Log.i(TAG, "onDestroy()...");
-        mCameraManager.releaseCamera();
     }
 
     private AlertDialog createAlertDialog(String title, String msg, String buttonText) {
