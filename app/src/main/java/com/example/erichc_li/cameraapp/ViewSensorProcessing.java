@@ -5,23 +5,22 @@ import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
-import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
 import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
 
 import java.io.IOException;
 import java.util.List;
 
-public class ViewProcessing {
+public class ViewSensorProcessing extends ViewProcessing {
 
-    private static final String TAG = ViewProcessing.class.getName();
-    private CameraManager mCameraManager;
+    private static final String TAG = ViewSensorProcessing.class.getName();
+    private CameraSensorManager mCameraManager;
 
-    public ViewProcessing(CameraManager cameraManager){
+    public ViewSensorProcessing(CameraSensorManager cameraManager) {
+        super(cameraManager);
         mCameraManager = cameraManager;
     }
 
     public void viewCreated(int value, Object preview){
-        Log.i(TAG, "viewCreated...");
         if (mCameraManager.getCamera() != null) {
             try {
                 Log.i(TAG, "StartPreview...");
@@ -36,16 +35,7 @@ public class ViewProcessing {
 
                 mCameraManager.setCameraParameters(parameters);
 
-                switch (value){
-                    case R.id.Pic_size1:
-                    case R.id.Pic_size3:
-                    case R.id.Pic_size4:
-                        mCameraManager.setPreviewTexture((SurfaceTexture) preview);
-                        break;
-                    case R.id.Pic_size2:
-                        mCameraManager.setPreviewDisplay((SurfaceHolder) preview);
-                        break;
-                }
+                mCameraManager.setPreviewTexture((SurfaceTexture) preview);
 
                 mCameraManager.startPreview();
 
@@ -59,7 +49,7 @@ public class ViewProcessing {
     }
 
     public void viewChanged(int value, Object preview){
-        Log.i(TAG, "viewChanged...");
+
         try {
             mCameraManager.stopPreview();
         } catch (Exception ioe) {
@@ -67,16 +57,9 @@ public class ViewProcessing {
         }
 
         try {
-            switch (value){
-                case R.id.Pic_size1:
-                case R.id.Pic_size3:
-                case R.id.Pic_size4:
-                    mCameraManager.setPreviewTexture((SurfaceTexture) preview);
-                    break;
-                case R.id.Pic_size2:
-                    mCameraManager.setPreviewDisplay((SurfaceHolder) preview);
-                    break;
-            }
+
+            mCameraManager.setPreviewTexture((SurfaceTexture) preview);
+
             mCameraManager.startPreview();
 
         } catch (Exception e) {
@@ -85,9 +68,8 @@ public class ViewProcessing {
     }
 
     public void viewDestroyed(int value){
-        Log.i(TAG, "viewDestroyed...");
         mCameraManager.stopPreview();
         mCameraManager.releaseCamera();
+        mCameraManager.unregisterSensorListener();
     }
-
 }

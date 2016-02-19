@@ -6,6 +6,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
+import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
 import com.example.erichc_li.cameraapp.ViewProcessing;
 
 public class SurfaceViewPreview extends SurfaceView implements SurfaceHolder.Callback {
@@ -26,13 +27,13 @@ public class SurfaceViewPreview extends SurfaceView implements SurfaceHolder.Cal
         previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         mViewProcessing = new ViewProcessing(mCameraManager);
         viewCategoryNum = value;
+        mCameraManager.ShowWhatView("SurfaceView");
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.i(TAG, "surfaceCreated...");
         mViewProcessing.viewCreated(viewCategoryNum, holder);
-        mCameraManager.ShowWhatView("SurfaceView");
     }
 
     @Override
@@ -44,6 +45,6 @@ public class SurfaceViewPreview extends SurfaceView implements SurfaceHolder.Cal
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.i(TAG, "surfaceDestroyed...");
-        mViewProcessing.viewDestroyed();
+        mViewProcessing.viewDestroyed(viewCategoryNum);
     }
 }

@@ -11,7 +11,7 @@ import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
 import com.example.erichc_li.cameraapp.FocusMetering;
 import com.example.erichc_li.cameraapp.MainActivity;
 import com.example.erichc_li.cameraapp.ViewProcessing;
-
+import com.example.erichc_li.cameraapp.ViewSensorProcessing;
 
 
 public class OthersPreview extends TextureView implements TextureView.SurfaceTextureListener {
@@ -29,21 +29,21 @@ public class OthersPreview extends TextureView implements TextureView.SurfaceTex
         mCameraManager = camera;
         mFocusMetering = new FocusMetering(context,mCameraManager);
         this.setSurfaceTextureListener(this);
-        mViewProcessing = new ViewProcessing(mCameraManager);
+        mViewProcessing = new ViewSensorProcessing(mCameraManager);
         viewCategoryNum = value;
+        mCameraManager.ShowWhatView("OthersPreview");
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         Log.i(TAG, "onSurfaceTextureAvailable...");
         mViewProcessing.viewCreated(viewCategoryNum,surface);
-        mCameraManager.ShowWhatView("OthersPreview");
     }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         Log.i(TAG, "onSurfaceTextureSizeChanged...");
-        mViewProcessing.viewCreated(viewCategoryNum,surface);
+        mViewProcessing.viewChanged(viewCategoryNum,surface);
         Log.i(TAG, "getFocusMode() = " + mCameraManager.getCameraParameters().getFocusMode());
 
     }
@@ -51,8 +51,7 @@ public class OthersPreview extends TextureView implements TextureView.SurfaceTex
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         Log.i(TAG, "onSurfaceTextureDestroyed...");
-        mViewProcessing.viewDestroyed();
-        mCameraManager.unregisterSensorListener();
+        mViewProcessing.viewDestroyed(viewCategoryNum);
         return true;
     }
 

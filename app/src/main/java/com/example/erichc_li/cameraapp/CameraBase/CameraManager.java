@@ -38,7 +38,7 @@ public class CameraManager {
         mCamera = getCameraInstance();
     }
 
-    private Camera getCameraInstance() {
+    public Camera getCameraInstance() {
         Camera c = null;
         try {
             c = Camera.open();
@@ -96,7 +96,10 @@ public class CameraManager {
     }
 
     public void releaseCamera() {
-        mCamera.release();
+        if (mCamera != null) {
+            mCamera.release();
+            mCamera = null;
+        }
     }
 
     public void setPreviewTexture(SurfaceTexture mSurface) throws IOException {
@@ -108,7 +111,10 @@ public class CameraManager {
     }
 
     public void stopPreview() {
-        mCamera.stopPreview();
+        if (mCamera != null) {
+            mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);
+        }
     }
 
     public void cancelAutoFocus() {

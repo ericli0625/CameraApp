@@ -17,6 +17,10 @@ public class CameraSensorManager extends CameraManager implements SensorEventLis
         super(mContext);
         mSensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
         aSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        registerSensorListener();
+    }
+
+    public void registerSensorListener(){
         mSensorManager.registerListener(this, aSensor, SensorManager.SENSOR_DELAY_UI);
     }
 

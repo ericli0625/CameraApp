@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.TextureView;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
+import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
 import com.example.erichc_li.cameraapp.ViewProcessing;
 
 
@@ -23,25 +24,25 @@ public class TextureViewPreview extends TextureView implements TextureView.Surfa
         this.setSurfaceTextureListener(this);
         mViewProcessing = new ViewProcessing(mCameraManager);
         viewCategoryNum = value;
+        mCameraManager.ShowWhatView("TextureView");
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         Log.i(TAG, "onSurfaceTextureAvailable...");
         mViewProcessing.viewCreated(viewCategoryNum,surface);
-        mCameraManager.ShowWhatView("TextureView");
     }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         Log.i(TAG, "onSurfaceTextureSizeChanged...");
-        mViewProcessing.viewCreated(viewCategoryNum,surface);
+        mViewProcessing.viewChanged(viewCategoryNum,surface);
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         Log.i(TAG, "onSurfaceTextureDestroyed...");
-        mViewProcessing.viewDestroyed();
+        mViewProcessing.viewDestroyed(viewCategoryNum);
         return true;
     }
 
