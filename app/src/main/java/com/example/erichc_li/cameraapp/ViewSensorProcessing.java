@@ -31,7 +31,6 @@ public class ViewSensorProcessing extends ViewProcessing {
                 mCameraManager.setCameraDisplayOrientation(0, parameters);
 
                 List<Camera.Size> psSize = parameters.getSupportedPictureSizes();
-
                 parameters.setPictureSize(psSize.get(0).width, psSize.get(0).height);
 
                 mCameraManager.setCameraParameters(parameters);

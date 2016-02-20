@@ -8,6 +8,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -23,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public class CameraManager {
 
@@ -32,6 +35,7 @@ public class CameraManager {
     Camera mCamera;
     Camera.Parameters parameters;
     private int mRotation;
+    private boolean safeToTakePicture = false;
 
     public CameraManager(Context context,Camera camera) {
         mContext = context;
@@ -98,6 +102,7 @@ public class CameraManager {
 
     public void startPreview() {
         mCamera.startPreview();
+        safeToTakePicture = true;
     }
 
     public void stopPreview() {
@@ -136,27 +141,76 @@ public class CameraManager {
     }
 
     public void takePicture() {
-        mCamera.takePicture(null, null, photoCallback);
+        if (safeToTakePicture) {
+            mCamera.takePicture(shutterCallback, null, photoCallback);
+            safeToTakePicture = false;
+        }
+    }
+
+    Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
+        public MediaPlayer mShootSound;
+        @Override
+        public void onShutter() {
+            try {
+                AudioManager meng = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+                int volume = meng.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
+                if (volume != 0) {
+                    if (mShootSound == null) {
+                        mShootSound = MediaPlayer.create(mContext, Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
+                    }
+                    if (mShootSound != null) {
+                        mShootSound.start();
+                    }
+                }
+            } catch (Exception e) {
+                e.getStackTrace();
+            }
+        }
+    };
+
+    private Camera.PictureCallback rawPictureCallback = new Camera.PictureCallback(){
+        @Override
+        public void onPictureTaken(byte[] data, Camera arg1) {
+            // TODO Auto-generated method stub
+            Log.d("TAG", "onPictureTaken - raw");
+            byte[] photo = data;
+            new SavePhotoTask().execute(photo);
+            mCamera.startPreview();
+            safeToTakePicture = true;
+        }
+    };
+
+    class SaveRawPhotoTask extends AsyncTask<byte[], String, String> {
+        @Override
+        protected String doInBackground(byte[]... raw) {
+            Bitmap bm = BitmapFactory.decodeByteArray(raw[0], 0, raw[0].length);
+            return (null);
+        }
     }
 
     private Camera.PictureCallback photoCallback = new Camera.PictureCallback() {
-
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             byte[] photo = data;
             new SavePhotoTask().execute(photo);
             mCamera.startPreview();
+            safeToTakePicture = true;
         }
     };
 
     class SavePhotoTask extends AsyncTask<byte[], String, String> {
         @Override
         protected String doInBackground(byte[]... jpeg) {
-            File photoPath = getOutputMediaFile();
 
+            if (jpeg[0] == null){
+                Log.e(TAG, "jpeg[0] is null");
+                return (null);
+            }
+
+            File photoPath = getOutputMediaFile();
             Bitmap pictureTaken = BitmapFactory.decodeByteArray(jpeg[0], 0, jpeg[0].length);
             Matrix matrix = new Matrix();
-            //matrix.preRotate(90);
+            matrix.preRotate(90);
             pictureTaken = Bitmap.createBitmap(pictureTaken, 0, 0, pictureTaken.getWidth(), pictureTaken.getHeight(), matrix, true);
 
             try {
@@ -192,8 +246,11 @@ public class CameraManager {
         return photo;
     }
 
-    public void setCameraPic(int w, int h) {
+    public void setCameraPic(int i) {
         Camera.Parameters parameters = getCameraParameters();
+        List<Camera.Size> psSize = parameters.getSupportedPictureSizes();
+        int w = psSize.get(i).width;
+        int h = psSize.get(i).height;
         parameters.setPictureSize(w, h);
         setCameraParameters(parameters);
         Toast.makeText(mContext.getApplicationContext(), w + "*" + h, Toast.LENGTH_SHORT).show();

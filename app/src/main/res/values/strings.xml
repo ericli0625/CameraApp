@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">CameraAPP</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name" translatable="false">CameraAPP</string>
+    <string name="action_settings" translatable="false">Settings</string>
 
-    <string name="Pic_size1">TextureView</string>
-    <string name="Pic_size2">SurfaceView</string>
-    <string name="Pic_size3">GLSurfaceView</string>
-    <string name="Pic_size4">SensorFocus</string>
+    <string name="View1" translatable="false">TextureView</string>
+    <string name="View2" translatable="false">SurfaceView</string>
+    <string name="View3">GLSurfaceView</string>
+    <string name="View4" translatable="false">SensorFocus</string>
 
 </resources>

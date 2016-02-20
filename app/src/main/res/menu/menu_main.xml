@@ -3,24 +3,24 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="com.example.erichc_li.cameraapp.MainActivity">
     <item
-        android:id="@+id/Pic_size1"
+        android:id="@+id/View1"
         android:orderInCategory="100"
-        android:title="@string/Pic_size1"
+        android:title="@string/View1"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/Pic_size2"
+        android:id="@+id/View2"
         android:orderInCategory="100"
-        android:title="@string/Pic_size2"
+        android:title="@string/View2"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/Pic_size3"
+        android:id="@+id/View3"
         android:orderInCategory="100"
-        android:title="@string/Pic_size3"
+        android:title="@string/View3"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/Pic_size4"
+        android:id="@+id/View4"
         android:orderInCategory="100"
-        android:title="@string/Pic_size4"
+        android:title="@string/View4"
         app:showAsAction="never"/>
 
 </menu>
