@@ -53,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
 
         mCamera = getCameraInstance();
 
+        mCameraManager = new CameraManager(this,mCamera);
+        mPreview = new TextureViewPreview(this, mCameraManager, R.id.View1);
+        mFrameLayout.addView(mPreview);
+
     }
 
     public Camera getCameraInstance() {
@@ -83,24 +87,24 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         switch (id) {
-            case R.id.Pic_size1:
+            case R.id.View1:
                 mCameraManager = new CameraManager(this,mCamera);
-                mPreview = new TextureViewPreview (this, mCameraManager,R.id.Pic_size1);
+                mPreview = new TextureViewPreview (this, mCameraManager,R.id.View1);
                 mFrameLayout.addView(mPreview);
                 return true;
-            case R.id.Pic_size2:
+            case R.id.View2:
                 mCameraManager = new CameraManager(this,mCamera);
-                mPreview = new SurfaceViewPreview(this, mCameraManager,R.id.Pic_size2);
+                mPreview = new SurfaceViewPreview(this, mCameraManager,R.id.View2);
                 mFrameLayout.addView(mPreview);
                 return true;
-            case R.id.Pic_size3:
+            case R.id.View3:
                 mCameraManager = new CameraManager(this,mCamera);
-                mPreview = new GLSurfaceViewPreview(this, mCameraManager,R.id.Pic_size3);
+                mPreview = new GLSurfaceViewPreview(this, mCameraManager,R.id.View3);
                 mFrameLayout.addView(mPreview);
                 return true;
-            case R.id.Pic_size4:
+            case R.id.View4:
                 mCameraManager = new CameraSensorManager(this,mCamera);
-                mPreview = new OthersPreview(this, (CameraSensorManager) mCameraManager,R.id.Pic_size4);
+                mPreview = new OthersPreview(this, (CameraSensorManager) mCameraManager,R.id.View4);
                 mFrameLayout.addView(mPreview);
                 return true;
             default:
@@ -114,11 +118,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.i(TAG, "onResume()...");
-
-        mCameraManager = new CameraManager(this,mCamera);
-        mPreview = new TextureViewPreview(this, mCameraManager, R.id.Pic_size1);
-        mFrameLayout.addView(mPreview);
-
     }
 
     @Override

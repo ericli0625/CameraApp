@@ -30,18 +30,17 @@ public class ViewProcessing {
                 mCameraManager.setCameraDisplayOrientation(0, parameters);
 
                 List<Camera.Size> psSize = parameters.getSupportedPictureSizes();
-
                 parameters.setPictureSize(psSize.get(0).width, psSize.get(0).height);
 
                 mCameraManager.setCameraParameters(parameters);
 
                 switch (value){
-                    case R.id.Pic_size1:
-                    case R.id.Pic_size3:
-                    case R.id.Pic_size4:
+                    case R.id.View1:
+                    case R.id.View3:
+                    case R.id.View4:
                         mCameraManager.setPreviewTexture((SurfaceTexture) preview);
                         break;
-                    case R.id.Pic_size2:
+                    case R.id.View2:
                         mCameraManager.setPreviewDisplay((SurfaceHolder) preview);
                         break;
                 }
@@ -67,12 +66,12 @@ public class ViewProcessing {
 
         try {
             switch (value){
-                case R.id.Pic_size1:
-                case R.id.Pic_size3:
-                case R.id.Pic_size4:
+                case R.id.View1:
+                case R.id.View3:
+                case R.id.View4:
                     mCameraManager.setPreviewTexture((SurfaceTexture) preview);
                     break;
-                case R.id.Pic_size2:
+                case R.id.View2:
                     mCameraManager.setPreviewDisplay((SurfaceHolder) preview);
                     break;
             }

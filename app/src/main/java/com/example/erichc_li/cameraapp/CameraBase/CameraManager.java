@@ -8,6 +8,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -23,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public class CameraManager {
 
@@ -136,8 +139,37 @@ public class CameraManager {
     }
 
     public void takePicture() {
-        mCamera.takePicture(null, null, photoCallback);
+        mCamera.takePicture(shutterCallback, rawPictureCallback, photoCallback);
     }
+
+    Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
+        public MediaPlayer mShootSound;
+        @Override
+        public void onShutter() {
+            try {
+                AudioManager meng = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+                int volume = meng.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
+                if (volume != 0) {
+                    if (mShootSound == null) {
+                        mShootSound = MediaPlayer.create(mContext, Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
+                    }
+                    if (mShootSound != null) {
+                        mShootSound.start();
+                    }
+                }
+            } catch (Exception e) {
+                e.getStackTrace();
+            }
+        }
+    };
+
+    private Camera.PictureCallback rawPictureCallback = new Camera.PictureCallback(){
+
+        @Override
+        public void onPictureTaken(byte[] arg0, Camera arg1) {
+            // TODO Auto-generated method stub
+
+        }};
 
     private Camera.PictureCallback photoCallback = new Camera.PictureCallback() {
 
@@ -156,7 +188,7 @@ public class CameraManager {
 
             Bitmap pictureTaken = BitmapFactory.decodeByteArray(jpeg[0], 0, jpeg[0].length);
             Matrix matrix = new Matrix();
-            //matrix.preRotate(90);
+            matrix.preRotate(90);
             pictureTaken = Bitmap.createBitmap(pictureTaken, 0, 0, pictureTaken.getWidth(), pictureTaken.getHeight(), matrix, true);
 
             try {
@@ -192,8 +224,11 @@ public class CameraManager {
         return photo;
     }
 
-    public void setCameraPic(int w, int h) {
+    public void setCameraPic(int i) {
         Camera.Parameters parameters = getCameraParameters();
+        List<Camera.Size> psSize = parameters.getSupportedPictureSizes();
+        int w = psSize.get(i).width;
+        int h = psSize.get(i).height;
         parameters.setPictureSize(w, h);
         setCameraParameters(parameters);
         Toast.makeText(mContext.getApplicationContext(), w + "*" + h, Toast.LENGTH_SHORT).show();
