@@ -35,6 +35,7 @@ public class CameraManager {
     Camera mCamera;
     Camera.Parameters parameters;
     private int mRotation;
+    private boolean safeToTakePicture = false;
 
     public CameraManager(Context context,Camera camera) {
         mContext = context;
@@ -101,6 +102,7 @@ public class CameraManager {
 
     public void startPreview() {
         mCamera.startPreview();
+        safeToTakePicture = true;
     }
 
     public void stopPreview() {
@@ -139,7 +141,10 @@ public class CameraManager {
     }
 
     public void takePicture() {
-        mCamera.takePicture(shutterCallback, rawPictureCallback, photoCallback);
+        if (safeToTakePicture) {
+            mCamera.takePicture(shutterCallback, null, photoCallback);
+            safeToTakePicture = false;
+        }
     }
 
     Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
@@ -164,28 +169,45 @@ public class CameraManager {
     };
 
     private Camera.PictureCallback rawPictureCallback = new Camera.PictureCallback(){
-
         @Override
-        public void onPictureTaken(byte[] arg0, Camera arg1) {
+        public void onPictureTaken(byte[] data, Camera arg1) {
             // TODO Auto-generated method stub
+            Log.d("TAG", "onPictureTaken - raw");
+            byte[] photo = data;
+            new SavePhotoTask().execute(photo);
+            mCamera.startPreview();
+            safeToTakePicture = true;
+        }
+    };
 
-        }};
+    class SaveRawPhotoTask extends AsyncTask<byte[], String, String> {
+        @Override
+        protected String doInBackground(byte[]... raw) {
+            Bitmap bm = BitmapFactory.decodeByteArray(raw[0], 0, raw[0].length);
+            return (null);
+        }
+    }
 
     private Camera.PictureCallback photoCallback = new Camera.PictureCallback() {
-
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             byte[] photo = data;
             new SavePhotoTask().execute(photo);
             mCamera.startPreview();
+            safeToTakePicture = true;
         }
     };
 
     class SavePhotoTask extends AsyncTask<byte[], String, String> {
         @Override
         protected String doInBackground(byte[]... jpeg) {
-            File photoPath = getOutputMediaFile();
 
+            if (jpeg[0] == null){
+                Log.e(TAG, "jpeg[0] is null");
+                return (null);
+            }
+
+            File photoPath = getOutputMediaFile();
             Bitmap pictureTaken = BitmapFactory.decodeByteArray(jpeg[0], 0, jpeg[0].length);
             Matrix matrix = new Matrix();
             matrix.preRotate(90);
