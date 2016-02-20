@@ -1,6 +1,7 @@
 package com.example.erichc_li.cameraapp.CameraBase;
 
 import android.content.Context;
+import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,8 +14,8 @@ public class CameraSensorManager extends CameraManager implements SensorEventLis
     private boolean mInitialized;
     private float mLastX,mLastY,mLastZ;
 
-    public CameraSensorManager(Context mContext) {
-        super(mContext);
+    public CameraSensorManager(Context mContext,Camera mCamera) {
+        super(mContext,mCamera);
         mSensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
         aSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         registerSensorListener();

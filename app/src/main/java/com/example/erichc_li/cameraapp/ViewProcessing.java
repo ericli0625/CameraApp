@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
-import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -87,7 +86,6 @@ public class ViewProcessing {
     public void viewDestroyed(int value){
         Log.i(TAG, "viewDestroyed...");
         mCameraManager.stopPreview();
-        mCameraManager.releaseCamera();
     }
 
 }

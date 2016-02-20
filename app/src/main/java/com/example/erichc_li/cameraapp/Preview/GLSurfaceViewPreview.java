@@ -5,7 +5,6 @@ import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.Matrix;
 import android.util.Log;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
@@ -38,6 +37,9 @@ public class GLSurfaceViewPreview extends GLSurfaceView implements GLSurfaceView
         setRenderer(this);
         mViewProcessing = new ViewProcessing(mCameraManager);
         viewCategoryNum = value;
+        mTextureID = createTextureID();
+        mSurfaceTexture = new SurfaceTexture(mTextureID);
+        mSurfaceTexture.setOnFrameAvailableListener(this);
         mCameraManager.ShowWhatView("GLSurfaceViewPreview");
     }
 
@@ -49,16 +51,14 @@ public class GLSurfaceViewPreview extends GLSurfaceView implements GLSurfaceView
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.i(TAG, "surfaceCreated...");
-        mTextureID = createTextureID();
-        mSurfaceTexture = new SurfaceTexture(mTextureID);
         mDirectDrawer = new DirectDrawer(mTextureID);
-        mSurfaceTexture.setOnFrameAvailableListener(this);
         mViewProcessing.viewCreated(viewCategoryNum,mSurfaceTexture);
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         Log.i(TAG, "surfaceChanged...");
+        mViewProcessing.viewChanged(viewCategoryNum, mSurfaceTexture);
     }
 
     @Override

@@ -33,19 +33,9 @@ public class CameraManager {
     Camera.Parameters parameters;
     private int mRotation;
 
-    public CameraManager(Context context) {
+    public CameraManager(Context context,Camera camera) {
         mContext = context;
-        mCamera = getCameraInstance();
-    }
-
-    public Camera getCameraInstance() {
-        Camera c = null;
-        try {
-            c = Camera.open();
-        } catch (Exception ioe) {
-            ioe.printStackTrace();
-        }
-        return c;
+        mCamera = camera;
     }
 
     public void setCameraDisplayOrientation(int cameraId, Camera.Parameters parameters) {

@@ -3,7 +3,6 @@ package com.example.erichc_li.cameraapp;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.util.Log;
-import android.view.SurfaceHolder;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
 
@@ -20,7 +19,9 @@ public class ViewSensorProcessing extends ViewProcessing {
         mCameraManager = cameraManager;
     }
 
+    @Override
     public void viewCreated(int value, Object preview){
+        Log.i(TAG, "viewCreated...");
         if (mCameraManager.getCamera() != null) {
             try {
                 Log.i(TAG, "StartPreview...");
@@ -48,8 +49,9 @@ public class ViewSensorProcessing extends ViewProcessing {
 
     }
 
+    @Override
     public void viewChanged(int value, Object preview){
-
+        Log.i(TAG, "viewChanged...");
         try {
             mCameraManager.stopPreview();
         } catch (Exception ioe) {
@@ -67,9 +69,10 @@ public class ViewSensorProcessing extends ViewProcessing {
         }
     }
 
+    @Override
     public void viewDestroyed(int value){
+        Log.i(TAG, "viewDestroyed...");
         mCameraManager.stopPreview();
-        mCameraManager.releaseCamera();
         mCameraManager.unregisterSensorListener();
     }
 }

@@ -2,6 +2,7 @@ package com.example.erichc_li.cameraapp;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -20,8 +21,6 @@ import com.example.erichc_li.cameraapp.Preview.OthersPreview;
 import com.example.erichc_li.cameraapp.Preview.SurfaceViewPreview;
 import com.example.erichc_li.cameraapp.Preview.TextureViewPreview;
 
-import java.io.IOException;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private FrameLayout mFrameLayout;
     public static FrameLayout mFrameLayout2;
     private View mPreview;
+    private Camera mCamera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +51,19 @@ public class MainActivity extends AppCompatActivity {
         mFrameLayout = (FrameLayout) findViewById(R.id.camera_textureview);
         mFrameLayout2 = (FrameLayout) findViewById(R.id.camera_textureview2);
 
+        mCamera = getCameraInstance();
+
     }
 
-
+    public Camera getCameraInstance() {
+        Camera c = null;
+        try {
+            c = Camera.open();
+        } catch (Exception ioe) {
+            ioe.printStackTrace();
+        }
+        return c;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -74,22 +84,22 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         switch (id) {
             case R.id.Pic_size1:
-                mCameraManager = new CameraManager(this);
+                mCameraManager = new CameraManager(this,mCamera);
                 mPreview = new TextureViewPreview (this, mCameraManager,R.id.Pic_size1);
                 mFrameLayout.addView(mPreview);
                 return true;
             case R.id.Pic_size2:
-                mCameraManager = new CameraManager(this);
+                mCameraManager = new CameraManager(this,mCamera);
                 mPreview = new SurfaceViewPreview(this, mCameraManager,R.id.Pic_size2);
                 mFrameLayout.addView(mPreview);
                 return true;
             case R.id.Pic_size3:
-                mCameraManager = new CameraManager(this);
+                mCameraManager = new CameraManager(this,mCamera);
                 mPreview = new GLSurfaceViewPreview(this, mCameraManager,R.id.Pic_size3);
                 mFrameLayout.addView(mPreview);
                 return true;
             case R.id.Pic_size4:
-                mCameraManager = new CameraSensorManager(this);
+                mCameraManager = new CameraSensorManager(this,mCamera);
                 mPreview = new OthersPreview(this, (CameraSensorManager) mCameraManager,R.id.Pic_size4);
                 mFrameLayout.addView(mPreview);
                 return true;
@@ -105,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         Log.i(TAG, "onResume()...");
 
-        mCameraManager = new CameraManager(this);
+        mCameraManager = new CameraManager(this,mCamera);
         mPreview = new TextureViewPreview(this, mCameraManager, R.id.Pic_size1);
         mFrameLayout.addView(mPreview);
 
@@ -139,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy(){
         super.onDestroy();
         Log.i(TAG, "onDestroy()...");
+        mCameraManager.releaseCamera();
     }
 
     private AlertDialog createAlertDialog(String title, String msg, String buttonText) {
