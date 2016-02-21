@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         mCamera = getCameraInstance();
 
         mCameraManager = new CameraManager(this,mCamera);
-        mPreview = new TextureViewPreview(this, mCameraManager, R.id.View1);
+        mPreview = new TextureViewPreview(this, mCameraManager);
         mFrameLayout.addView(mPreview);
 
     }
@@ -89,22 +89,22 @@ public class MainActivity extends AppCompatActivity {
         switch (id) {
             case R.id.View1:
                 mCameraManager = new CameraManager(this,mCamera);
-                mPreview = new TextureViewPreview (this, mCameraManager,R.id.View1);
+                mPreview = new TextureViewPreview (this, mCameraManager);
                 mFrameLayout.addView(mPreview);
                 return true;
             case R.id.View2:
                 mCameraManager = new CameraManager(this,mCamera);
-                mPreview = new SurfaceViewPreview(this, mCameraManager,R.id.View2);
+                mPreview = new SurfaceViewPreview(this, mCameraManager);
                 mFrameLayout.addView(mPreview);
                 return true;
             case R.id.View3:
                 mCameraManager = new CameraManager(this,mCamera);
-                mPreview = new GLSurfaceViewPreview(this, mCameraManager,R.id.View3);
+                mPreview = new GLSurfaceViewPreview(this, mCameraManager);
                 mFrameLayout.addView(mPreview);
                 return true;
             case R.id.View4:
                 mCameraManager = new CameraSensorManager(this,mCamera);
-                mPreview = new OthersPreview(this, (CameraSensorManager) mCameraManager,R.id.View4);
+                mPreview = new OthersPreview(this, (CameraSensorManager) mCameraManager);
                 mFrameLayout.addView(mPreview);
                 return true;
             default:

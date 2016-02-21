@@ -6,8 +6,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
-import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
-import com.example.erichc_li.cameraapp.ViewProcessing;
+import com.example.erichc_li.cameraapp.ViewProcessing.SurfaceViewProcessing;
+import com.example.erichc_li.cameraapp.ViewProcessing.ViewProcessing;
 
 public class SurfaceViewPreview extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -17,34 +17,32 @@ public class SurfaceViewPreview extends SurfaceView implements SurfaceHolder.Cal
 
     private final CameraManager mCameraManager;
     private final ViewProcessing mViewProcessing;
-    private int viewCategoryNum = 0;
 
-    public SurfaceViewPreview(Context context, CameraManager camera, int value) {
+    public SurfaceViewPreview(Context context, CameraManager camera) {
         super(context);
         mCameraManager = camera;
         previewHolder = getHolder();
         previewHolder.addCallback(this);
         previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        mViewProcessing = new ViewProcessing(mCameraManager);
-        viewCategoryNum = value;
+        mViewProcessing = new SurfaceViewProcessing(mCameraManager);
         mCameraManager.ShowWhatView("SurfaceView");
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.i(TAG, "surfaceCreated...");
-        mViewProcessing.viewCreated(viewCategoryNum, holder);
+        mViewProcessing.viewCreated(holder);
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         Log.i(TAG, "surfaceChanged...");
-        mViewProcessing.viewChanged(viewCategoryNum,holder);
+        mViewProcessing.viewChanged(holder);
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         Log.i(TAG, "surfaceDestroyed...");
-        mViewProcessing.viewDestroyed(viewCategoryNum);
+        mViewProcessing.viewDestroyed();
     }
 }

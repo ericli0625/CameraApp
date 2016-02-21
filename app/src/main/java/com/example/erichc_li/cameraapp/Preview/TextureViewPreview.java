@@ -6,8 +6,8 @@ import android.util.Log;
 import android.view.TextureView;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
-import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
-import com.example.erichc_li.cameraapp.ViewProcessing;
+import com.example.erichc_li.cameraapp.ViewProcessing.SurfaceTextureProcessing;
+import com.example.erichc_li.cameraapp.ViewProcessing.ViewProcessing;
 
 
 public class TextureViewPreview extends TextureView implements TextureView.SurfaceTextureListener {
@@ -16,33 +16,31 @@ public class TextureViewPreview extends TextureView implements TextureView.Surfa
 
     private final CameraManager mCameraManager;
     private final ViewProcessing mViewProcessing;
-    private int viewCategoryNum = 0;
 
-    public TextureViewPreview(Context context, CameraManager camera, int value) {
+    public TextureViewPreview(Context context, CameraManager camera) {
         super(context);
         mCameraManager = camera;
         this.setSurfaceTextureListener(this);
-        mViewProcessing = new ViewProcessing(mCameraManager);
-        viewCategoryNum = value;
+        mViewProcessing = new SurfaceTextureProcessing(mCameraManager);
         mCameraManager.ShowWhatView("TextureView");
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         Log.i(TAG, "onSurfaceTextureAvailable...");
-        mViewProcessing.viewCreated(viewCategoryNum,surface);
+        mViewProcessing.viewCreated(surface);
     }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         Log.i(TAG, "onSurfaceTextureSizeChanged...");
-        mViewProcessing.viewChanged(viewCategoryNum,surface);
+        mViewProcessing.viewChanged(surface);
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         Log.i(TAG, "onSurfaceTextureDestroyed...");
-        mViewProcessing.viewDestroyed(viewCategoryNum);
+        mViewProcessing.viewDestroyed();
         return true;
     }
 
