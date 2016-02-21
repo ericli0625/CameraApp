@@ -8,7 +8,8 @@ import android.opengl.GLSurfaceView;
 import android.util.Log;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
-import com.example.erichc_li.cameraapp.ViewProcessing;
+import com.example.erichc_li.cameraapp.ViewProcessing.SurfaceTextureProcessing;
+import com.example.erichc_li.cameraapp.ViewProcessing.ViewProcessing;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -25,18 +26,16 @@ public class GLSurfaceViewPreview extends GLSurfaceView implements GLSurfaceView
     private CameraManager mCameraManager;
     private SurfaceTexture mSurfaceTexture;
     private final ViewProcessing mViewProcessing;
-    private int viewCategoryNum = 0;
 
     private int mTextureID;
     private DirectDrawer mDirectDrawer;
 
-    public GLSurfaceViewPreview(Context context, CameraManager camera, int value) {
+    public GLSurfaceViewPreview(Context context, CameraManager camera) {
         super(context);
         mCameraManager = camera;
         setEGLContextClientVersion(2);
         setRenderer(this);
-        mViewProcessing = new ViewProcessing(mCameraManager);
-        viewCategoryNum = value;
+        mViewProcessing = new SurfaceTextureProcessing(mCameraManager);
         mTextureID = createTextureID();
         mSurfaceTexture = new SurfaceTexture(mTextureID);
         mSurfaceTexture.setOnFrameAvailableListener(this);
@@ -52,13 +51,13 @@ public class GLSurfaceViewPreview extends GLSurfaceView implements GLSurfaceView
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.i(TAG, "surfaceCreated...");
         mDirectDrawer = new DirectDrawer(mTextureID);
-        mViewProcessing.viewCreated(viewCategoryNum,mSurfaceTexture);
+        mViewProcessing.viewCreated(mSurfaceTexture);
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         Log.i(TAG, "surfaceChanged...");
-        mViewProcessing.viewChanged(viewCategoryNum, mSurfaceTexture);
+        mViewProcessing.viewChanged(mSurfaceTexture);
     }
 
     @Override

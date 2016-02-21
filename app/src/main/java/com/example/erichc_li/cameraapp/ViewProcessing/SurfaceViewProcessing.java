@@ -1,27 +1,26 @@
-package com.example.erichc_li.cameraapp;
+package com.example.erichc_li.cameraapp.ViewProcessing;
 
-import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.util.Log;
+import android.view.SurfaceHolder;
 
-import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
+import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
 
 import java.io.IOException;
 import java.util.List;
 
-public class ViewSensorProcessing extends ViewProcessing {
+public class SurfaceViewProcessing implements ViewProcessing {
 
-    private static final String TAG = ViewSensorProcessing.class.getName();
-    private CameraSensorManager mCameraManager;
+    private static final String TAG = SurfaceViewProcessing.class.getName();
+    private CameraManager mCameraManager;
 
-    public ViewSensorProcessing(CameraSensorManager cameraManager) {
-        super(cameraManager);
+    public SurfaceViewProcessing(CameraManager cameraManager){
         mCameraManager = cameraManager;
     }
 
     @Override
-    public void viewCreated(int value, Object preview){
-        Log.i(TAG, "viewCreated...");
+    public void viewCreated(Object preview){
+        Log.i(TAG, "viewCreated...SurfaceViewProcessing");
         if (mCameraManager.getCamera() != null) {
             try {
                 Log.i(TAG, "StartPreview...");
@@ -35,7 +34,7 @@ public class ViewSensorProcessing extends ViewProcessing {
 
                 mCameraManager.setCameraParameters(parameters);
 
-                mCameraManager.setPreviewTexture((SurfaceTexture) preview);
+                mCameraManager.setPreviewDisplay((SurfaceHolder) preview);
 
                 mCameraManager.startPreview();
 
@@ -49,8 +48,8 @@ public class ViewSensorProcessing extends ViewProcessing {
     }
 
     @Override
-    public void viewChanged(int value, Object preview){
-        Log.i(TAG, "viewChanged...");
+    public void viewChanged(Object preview){
+        Log.i(TAG, "viewChanged...SurfaceViewProcessing");
         try {
             mCameraManager.stopPreview();
         } catch (Exception ioe) {
@@ -58,20 +57,17 @@ public class ViewSensorProcessing extends ViewProcessing {
         }
 
         try {
-
-            mCameraManager.setPreviewTexture((SurfaceTexture) preview);
-
+            mCameraManager.setPreviewDisplay((SurfaceHolder) preview);
             mCameraManager.startPreview();
-
         } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
     }
 
     @Override
-    public void viewDestroyed(int value){
-        Log.i(TAG, "viewDestroyed...");
+    public void viewDestroyed(){
+        Log.i(TAG, "viewDestroyed...SurfaceViewProcessing");
         mCameraManager.stopPreview();
-        mCameraManager.unregisterSensorListener();
     }
+
 }

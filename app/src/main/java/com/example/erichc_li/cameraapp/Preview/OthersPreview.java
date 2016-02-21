@@ -10,8 +10,8 @@ import android.view.TextureView;
 import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
 import com.example.erichc_li.cameraapp.FocusMetering;
 import com.example.erichc_li.cameraapp.MainActivity;
-import com.example.erichc_li.cameraapp.ViewProcessing;
-import com.example.erichc_li.cameraapp.ViewSensorProcessing;
+import com.example.erichc_li.cameraapp.ViewProcessing.SurfaceTextureSensorProcessing;
+import com.example.erichc_li.cameraapp.ViewProcessing.ViewProcessing;
 
 
 public class OthersPreview extends TextureView implements TextureView.SurfaceTextureListener {
@@ -20,30 +20,28 @@ public class OthersPreview extends TextureView implements TextureView.SurfaceTex
 
     private CameraSensorManager mCameraManager;
     private final ViewProcessing mViewProcessing;
-    private int viewCategoryNum = 0;
 
     private FocusMetering mFocusMetering;
 
-    public OthersPreview(Context context, CameraSensorManager camera, int value) {
+    public OthersPreview(Context context, CameraSensorManager camera) {
         super(context);
         mCameraManager = camera;
         mFocusMetering = new FocusMetering(context,mCameraManager);
         this.setSurfaceTextureListener(this);
-        mViewProcessing = new ViewSensorProcessing(mCameraManager);
-        viewCategoryNum = value;
+        mViewProcessing = new SurfaceTextureSensorProcessing(mCameraManager);
         mCameraManager.ShowWhatView("OthersPreview");
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         Log.i(TAG, "onSurfaceTextureAvailable...");
-        mViewProcessing.viewCreated(viewCategoryNum,surface);
+        mViewProcessing.viewCreated(surface);
     }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         Log.i(TAG, "onSurfaceTextureSizeChanged...");
-        mViewProcessing.viewChanged(viewCategoryNum,surface);
+        mViewProcessing.viewChanged(surface);
         Log.i(TAG, "getFocusMode() = " + mCameraManager.getCameraParameters().getFocusMode());
 
     }
@@ -51,7 +49,7 @@ public class OthersPreview extends TextureView implements TextureView.SurfaceTex
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         Log.i(TAG, "onSurfaceTextureDestroyed...");
-        mViewProcessing.viewDestroyed(viewCategoryNum);
+        mViewProcessing.viewDestroyed();
         return true;
     }
 
