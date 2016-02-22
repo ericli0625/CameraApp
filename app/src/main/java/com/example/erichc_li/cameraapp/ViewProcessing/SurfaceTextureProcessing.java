@@ -9,9 +9,9 @@ import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
 import java.io.IOException;
 import java.util.List;
 
-public class SurfaceTextureProcessing implements ViewProcessing {
+public class SurfaceTextureProcessing extends ViewProcessing {
 
-    private static final String TAG = SurfaceViewProcessing.class.getName();
+    private static final String TAG = SurfaceTextureProcessing.class.getName();
     private CameraManager mCameraManager;
     public SurfaceTextureProcessing(CameraManager cameraManager){
         mCameraManager = cameraManager;

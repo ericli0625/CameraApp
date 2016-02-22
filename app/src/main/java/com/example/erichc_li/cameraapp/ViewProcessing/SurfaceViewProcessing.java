@@ -9,7 +9,7 @@ import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
 import java.io.IOException;
 import java.util.List;
 
-public class SurfaceViewProcessing implements ViewProcessing {
+public class SurfaceViewProcessing extends ViewProcessing {
 
     private static final String TAG = SurfaceViewProcessing.class.getName();
     private CameraManager mCameraManager;
