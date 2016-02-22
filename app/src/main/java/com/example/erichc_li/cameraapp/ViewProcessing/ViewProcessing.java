@@ -1,11 +1,11 @@
 package com.example.erichc_li.cameraapp.ViewProcessing;
 
-public interface ViewProcessing {
+public abstract class ViewProcessing {
 
-    void viewCreated(Object preview);
+    public abstract void viewCreated(Object preview);
 
-    void viewChanged(Object preview);
+    public abstract void viewChanged(Object preview);
 
-    void viewDestroyed();
+    public abstract void viewDestroyed();
 
 }
