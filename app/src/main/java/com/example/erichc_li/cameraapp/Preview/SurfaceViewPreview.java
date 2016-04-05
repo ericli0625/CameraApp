@@ -30,10 +30,8 @@ public class SurfaceViewPreview extends Preview implements SurfaceHolder.Callbac
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.i(TAG, "surfaceCreated...");
-        if(holder!=null && !holder.equals("")) {
-            previewHolder = holder;
-            setSurface(holder);
-        }
+        previewHolder = holder;
+        setSurface(holder);
     }
 
     @Override

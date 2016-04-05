@@ -35,7 +35,7 @@ public class CameraManager {
     private int mRotation;
     private boolean safeToTakePicture = false;
 
-    public CameraManager(Context context,Camera camera) {
+    public CameraManager(Context context, Camera camera) {
         mContext = context;
         mCamera = camera;
     }
@@ -133,7 +133,7 @@ public class CameraManager {
 
     public void setSurface(Object surface) {
 
-        if (surface instanceof SurfaceHolder){
+        if (surface instanceof SurfaceHolder) {
             setPreviewDisplay((SurfaceHolder) surface);
         } else {
             setPreviewTexture((SurfaceTexture) surface);
@@ -170,6 +170,7 @@ public class CameraManager {
 
     Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
         public MediaPlayer mShootSound;
+
         @Override
         public void onShutter() {
             try {
@@ -189,7 +190,7 @@ public class CameraManager {
         }
     };
 
-    private Camera.PictureCallback rawPictureCallback = new Camera.PictureCallback(){
+    private Camera.PictureCallback rawPictureCallback = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera arg1) {
             // TODO Auto-generated method stub
@@ -212,7 +213,7 @@ public class CameraManager {
         @Override
         protected String doInBackground(byte[]... jpeg) {
 
-            if (jpeg[0] == null){
+            if (jpeg[0] == null) {
                 Log.e(TAG, "jpeg[0] is null");
                 return (null);
             }
@@ -256,7 +257,7 @@ public class CameraManager {
         return photo;
     }
 
-    public void setPictureSize(){
+    public void setPictureSize() {
         Camera.Parameters parameters = getCameraParameters();
         setCameraDisplayOrientation(0, parameters);
         List<Camera.Size> psSize = parameters.getSupportedPictureSizes();

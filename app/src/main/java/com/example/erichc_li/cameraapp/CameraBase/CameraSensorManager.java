@@ -12,20 +12,20 @@ public class CameraSensorManager extends CameraManager implements SensorEventLis
     private SensorManager mSensorManager;
     private Sensor aSensor;
     private boolean mInitialized;
-    private float mLastX,mLastY,mLastZ;
+    private float mLastX, mLastY, mLastZ;
 
-    public CameraSensorManager(Context mContext,Camera mCamera) {
-        super(mContext,mCamera);
+    public CameraSensorManager(Context mContext, Camera mCamera) {
+        super(mContext, mCamera);
         mSensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
         aSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         registerSensorListener();
     }
 
-    public void registerSensorListener(){
+    public void registerSensorListener() {
         mSensorManager.registerListener(this, aSensor, SensorManager.SENSOR_DELAY_UI);
     }
 
-    public void unregisterSensorListener(){
+    public void unregisterSensorListener() {
         mSensorManager.unregisterListener(this);
     }
 
@@ -36,18 +36,18 @@ public class CameraSensorManager extends CameraManager implements SensorEventLis
         float y = arg0.values[1];
         float z = arg0.values[2];
 
-        if (!mInitialized){
+        if (!mInitialized) {
             mLastX = x;
             mLastY = y;
             mLastZ = z;
             mInitialized = true;
         }
 
-        float deltaX  = Math.abs(mLastX - x);
+        float deltaX = Math.abs(mLastX - x);
         float deltaY = Math.abs(mLastY - y);
         float deltaZ = Math.abs(mLastZ - z);
 
-        if(deltaX > 1 || deltaY > 1 || deltaZ > 1){
+        if (deltaX > 1 || deltaY > 1 || deltaZ > 1) {
             //Log.i(TAG, "deltaX = "+deltaX+", deltaY = "+deltaY+", deltaZ = "+deltaZ);
             //Log.i(TAG, "onSensorChanged 聚焦成功...");
             this.autoFocus();

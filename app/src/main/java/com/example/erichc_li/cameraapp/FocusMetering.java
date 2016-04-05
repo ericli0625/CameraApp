@@ -23,7 +23,7 @@ public class FocusMetering {
 
     private CameraSensorManager mCameraManager;
 
-    public FocusMetering(Context context, CameraSensorManager camera){
+    public FocusMetering(Context context, CameraSensorManager camera) {
         mContext = context;
         mCameraManager = camera;
     }
@@ -54,7 +54,7 @@ public class FocusMetering {
         mCameraManager.setCameraParameters(params);
     }
 
-    public void handleFocus(MotionEvent event,int action) {
+    public void handleFocus(MotionEvent event, int action) {
         int pointerId = event.getPointerId(0);
         int pointerIndex = event.findPointerIndex(pointerId);
         // Get the pointer's current position
@@ -79,7 +79,7 @@ public class FocusMetering {
                 params.setFocusAreas(focusAreas);
             }
 
-            if (params.getMaxNumMeteringAreas() > 0){
+            if (params.getMaxNumMeteringAreas() > 0) {
                 List<Camera.Area> meteringAreas = new ArrayList<Camera.Area>();
                 meteringAreas.add(new Camera.Area(meteringRect, 1000));
 
@@ -89,7 +89,7 @@ public class FocusMetering {
             if (action == MotionEvent.ACTION_UP && zoom != true) {
                 SquareView mSquareView = new SquareView(mContext, x, y);
 //                MainActivity.mFrameLayout2.addView(mSquareView);
-            } else if (action == MotionEvent.ACTION_DOWN && zoom == true){
+            } else if (action == MotionEvent.ACTION_DOWN && zoom == true) {
                 zoom = false;
             }
 
@@ -104,8 +104,8 @@ public class FocusMetering {
         float focusAreaSize = 300;
         int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
 
-        int centerX = (int) ( ((x / ((Activity) mContext).getWindowManager().getDefaultDisplay().getWidth()) * 2000) - 1000);
-        int centerY = (int) ( ((y / ((Activity) mContext).getWindowManager().getDefaultDisplay().getHeight()) * 2000) - 1000);
+        int centerX = (int) (((x / ((Activity) mContext).getWindowManager().getDefaultDisplay().getWidth()) * 2000) - 1000);
+        int centerY = (int) (((y / ((Activity) mContext).getWindowManager().getDefaultDisplay().getHeight()) * 2000) - 1000);
 
         //Log.i(TAG, "X = " +x+", Y = "+y);
         //Log.i(TAG, "(this.getWidth()) = " +  (this.getWidth()) + ", (this.getHeight()) = " + (this.getHeight()));
@@ -113,7 +113,7 @@ public class FocusMetering {
 
         //Log.i(TAG, "centerX = " +centerX+", centerY = "+centerY);
 
-        if (centerX < 1 && centerY < 1){
+        if (centerX < 1 && centerY < 1) {
             centerY *= (-1);
             //Log.i(TAG, "1 centerX = " +centerX+", centerY = "+centerY);
         } else if (centerX > 1 && centerY < 1) {
@@ -147,7 +147,9 @@ public class FocusMetering {
         return x;
     }
 
-    /** Determine the space between the first two fingers */
+    /**
+     * Determine the space between the first two fingers
+     */
     public static float getFingerSpacing(MotionEvent event) {
         //Log.i(TAG, "event.getX(0) = "+event.getX(0)+", event.getX(1) = "+event.getX(1));
         //Log.i(TAG, "event.getY(0) = "+event.getY(0)+", event.getY(1) = "+event.getY(1));

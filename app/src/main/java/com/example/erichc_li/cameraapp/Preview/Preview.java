@@ -12,7 +12,7 @@ public abstract class Preview {
     private CameraManager mCameraManager;
     private PreviewListener mPreviewListener;
 
-    public Preview(Context context) {
+    protected Preview(Context context) {
         mContext = context;
     }
 
@@ -30,18 +30,17 @@ public abstract class Preview {
         mPreviewListener = previewlistener;
     }
 
-    protected void setSurface(Object surface){
+    protected void setSurface(Object surface) {
         mCameraManager.setSurface(surface);
         mPreviewListener.onPreviewCreated(surface);
-
     }
 
-    public void ShowWhatView(String name) {
+    protected void ShowWhatView(String name) {
         Toast.makeText(mContext.getApplicationContext(), name, Toast.LENGTH_SHORT).show();
     }
 
     public void onPauseTasks() {
-
+        mContext = null;
     }
 
     public void onDestroyTasks() {

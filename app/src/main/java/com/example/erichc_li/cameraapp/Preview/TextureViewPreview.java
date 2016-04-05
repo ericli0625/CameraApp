@@ -28,15 +28,15 @@ public class TextureViewPreview extends Preview implements TextureView.SurfaceTe
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         Log.i(TAG, "onSurfaceTextureAvailable...");
-        if(surface!=null && !surface.equals("")) {
-            mSurfaceTexture = surface;
-            setSurface(surface);
-        }
+        mSurfaceTexture = surface;
+        setSurface(surface);
     }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
         Log.i(TAG, "onSurfaceTextureSizeChanged...");
+        mSurfaceTexture = surface;
+        setSurface(surface);
     }
 
     @Override
@@ -49,5 +49,28 @@ public class TextureViewPreview extends Preview implements TextureView.SurfaceTe
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
 
     }
+
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+//        //Log.i(TAG, "onTouchEvent()...");
+//        Camera.Parameters parameters = mCameraManager.getCameraParameters();
+//        int action = event.getAction() & MotionEvent.ACTION_MASK;
+////        MainActivity.mFrameLayout2.removeAllViews();
+//
+//        if (event.getPointerCount() > 1) {
+//            if (action == MotionEvent.ACTION_POINTER_DOWN) {
+//                mFocusMetering.oldDis = mFocusMetering.getFingerSpacing(event);
+//            } else if (action == MotionEvent.ACTION_MOVE && parameters.isZoomSupported()) {
+//                mCameraManager.cancelAutoFocus();
+//                mFocusMetering.handleZoom(event);
+//            }
+//        } else {
+//            if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
+//                mFocusMetering.handleFocus(event, action);
+//            }
+//        }
+//
+//        return true;
+//    }
 
 }

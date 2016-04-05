@@ -8,6 +8,8 @@ import android.widget.FrameLayout;
 import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
 import com.example.erichc_li.cameraapp.Preview.Preview;
 import com.example.erichc_li.cameraapp.Preview.PreviewFactory;
+import com.example.erichc_li.cameraapp.UI.SampleUI;
+import com.example.erichc_li.cameraapp.UI.UI;
 
 
 public class Controller {
@@ -19,23 +21,22 @@ public class Controller {
     private static final int PREVIEW_GLSURFACEVIEW = R.id.View3;
 
     private Activity mActivity;
-    private FrameLayout mFrameLayout;
-    public static FrameLayout mFrameLayout2;
     private Preview mPreview;
 
     private CameraManager mCameraManager;
     private Camera mCamera;
+    private SampleUI mUI;
 
     public Controller(Activity context) {
         mActivity = context;
         openCamera();
     }
 
-    public void openCamera() {
+    private void openCamera() {
         mCamera = getCameraInstance();
     }
 
-    public Camera getCameraInstance() {
+    private Camera getCameraInstance() {
         Camera c = null;
         try {
             c = Camera.open();
@@ -45,43 +46,61 @@ public class Controller {
         return c;
     }
 
-    public void initCamera() {
+    private void initUI() {
+        Log.i(TAG, "initUI...");
+        mUI = new SampleUI(mActivity);
+        mUI.init();
+        mUI.setCaptureButtonListener(mCaptureButtonListener);
+    }
+
+    private UI.CaptureButtonListener mCaptureButtonListener = new UI.CaptureButtonListener() {
+        @Override
+        public void onCaptureButtonClick() {
+            if (mCameraManager != null) {
+                mCameraManager.takePicture();
+            }
+        }
+    };
+
+    private void initCamera() {
 
         Log.i(TAG, "initCamera...");
         mCameraManager = new CameraManager(mActivity, mCamera);
         if (mCameraManager.getCamera() != null) {
-                mCameraManager.setPictureSize();
+            mCameraManager.setPictureSize();
         } else {
             Log.i(TAG, "mCamera is null");
         }
 
     }
 
-    public void initPreview() {
+    private void initPreview() {
 
         Log.i(TAG, "initPreview...");
-        mFrameLayout = (FrameLayout) mActivity.findViewById(R.id.camera_textureview);
-        mFrameLayout2 = (FrameLayout) mActivity.findViewById(R.id.camera_textureview2);
+        createCameraPreview(PREVIEW_TEXTUREVIEW);
 
-        selectCameraPreview(PREVIEW_SURFACEVIEW);
+        mUI.addCameraPreview(mPreview.getView());
 
-        mFrameLayout.addView(mPreview.getView());
+        if (!mCameraManager.equals("") && mCameraManager != null) {
+            mPreview.setCamera(mCameraManager);
+        } else {
+            Log.i(TAG, "mCameraManager is null");
+        }
 
-        mPreview.setCamera(mCameraManager);
-
-        mPreview.setPreviewListener(new Preview.PreviewListener() {
-            @Override
-            public void onPreviewCreated(Object surface) {
-                Log.i(TAG, "StartPreview...");
-                mCameraManager.startPreview();
-            }
-        });
+        mPreview.setPreviewListener(mPreviewListener);
 
     }
 
-    public void selectCameraPreview(int id) {
+    private Preview.PreviewListener mPreviewListener = new Preview.PreviewListener() {
+        @Override
+        public void onPreviewCreated(Object surface) {
+            Log.i(TAG, "StartPreview...");
+            mCameraManager.startPreview();
+        }
+    };
 
-        Log.i(TAG, "configCameraView...");
+    private void createCameraPreview(int id) {
+
         switch (id) {
             case PREVIEW_TEXTUREVIEW:
                 mPreview = PreviewFactory.createTextureView(mActivity);
@@ -98,32 +117,31 @@ public class Controller {
 
     }
 
-    public void executeResume(){
+    public void executeResume() {
+        initUI();
         initCamera();
         initPreview();
     }
 
-    public void executePause(){
+    public void executePause() {
 
         if (mPreview != null)
             mPreview.onPauseTasks();
 
-        mCameraManager.setSurface(null);
-        mPreview.setCamera(null);
-
         if (mCameraManager != null)
             mCameraManager.onPauseTasks();
 
-        mCameraManager = null;
-    }
-
-    public void executeStop(){
-
-
+        if (mUI != null)
+            mUI.onPauseTasks();
 
     }
 
-    public void executeDestroy(){
+    public void executeStop() {
+
+
+    }
+
+    public void executeDestroy() {
 
         if (mPreview != null)
             mPreview.onDestroyTasks();
@@ -131,12 +149,13 @@ public class Controller {
         if (mCameraManager != null)
             mCameraManager.onDestroyTasks();
 
+        if (mUI != null)
+            mUI.onDestroyTasks();
+
         mPreview = null;
         mCameraManager = null;
-    }
+        mUI = null;
 
-    public void removeAllViews() {
-        mFrameLayout.removeAllViews();
     }
 
 }

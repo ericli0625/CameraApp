@@ -9,9 +9,9 @@ import android.view.View;
 public class SquareView extends View {
 
     private static final String TAG = "SquareView";
-    private float mX,mY;
+    private float mX, mY;
 
-    public SquareView(Context context,float x , float y) {
+    public SquareView(Context context, float x, float y) {
         super(context);
         mX = x;
         mY = y;

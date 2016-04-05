@@ -95,7 +95,7 @@ public class GLSurfaceViewPreview extends Preview implements GLSurfaceView.Rende
         private int mPositionHandle;
         private int mTextureCoordHandle;
 
-        private short drawOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw
+        private short drawOrder[] = {0, 1, 2, 0, 2, 3}; // order to draw
         // vertices
 
         // number of coordinates per vertex in this array
@@ -104,9 +104,9 @@ public class GLSurfaceViewPreview extends Preview implements GLSurfaceView.Rende
         private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per
         // vertex
 
-        final float squareCoords[] = { -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, };
+        final float squareCoords[] = {-1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f,};
 
-        final float textureVertices[] = { 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, };
+        final float textureVertices[] = {0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,};
 
         private int texture;
         private int mTransformLocation;
