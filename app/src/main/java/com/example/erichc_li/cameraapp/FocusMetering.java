@@ -88,7 +88,7 @@ public class FocusMetering {
 
             if (action == MotionEvent.ACTION_UP && zoom != true) {
                 SquareView mSquareView = new SquareView(mContext, x, y);
-                MainActivity.mFrameLayout2.addView(mSquareView);
+//                MainActivity.mFrameLayout2.addView(mSquareView);
             } else if (action == MotionEvent.ACTION_DOWN && zoom == true){
                 zoom = false;
             }

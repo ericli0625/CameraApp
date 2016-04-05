@@ -18,8 +18,6 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.widget.Toast;
 
-import com.example.erichc_li.cameraapp.MainActivity;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -96,10 +94,6 @@ public class CameraManager {
         }
     }
 
-    public void setPreviewTexture(SurfaceTexture mSurface) throws IOException {
-        mCamera.setPreviewTexture(mSurface);
-    }
-
     public void startPreview() {
         mCamera.startPreview();
         safeToTakePicture = true;
@@ -127,22 +121,49 @@ public class CameraManager {
             // currently set to auto-focus on single touch
             if (success) {
                 Log.i(TAG, "聚焦成功...");
-                MainActivity.mFrameLayout2.removeAllViews();
+//                MainActivity.mFrameLayout2.removeAllViews();
             } else {
                 Log.i(TAG, "聚焦失敗...");
-                MainActivity.mFrameLayout2.removeAllViews();
+//                MainActivity.mFrameLayout2.removeAllViews();
             }
 
         }
     };
 
-    public void setPreviewDisplay(SurfaceHolder previewDisplay) throws IOException {
-        mCamera.setPreviewDisplay(previewDisplay);
+
+    public void setSurface(Object surface) {
+
+        if (surface instanceof SurfaceHolder){
+            setPreviewDisplay((SurfaceHolder) surface);
+        } else {
+            setPreviewTexture((SurfaceTexture) surface);
+        }
+
     }
+
+    public void setPreviewDisplay(SurfaceHolder mHolder) {
+        Log.i(TAG, "setPreviewDisplay...");
+        try {
+            mCamera.setPreviewDisplay(mHolder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setPreviewTexture(SurfaceTexture mSurface) {
+        Log.i(TAG, "setPreviewTexture...");
+        try {
+            mCamera.setPreviewTexture(mSurface);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
     public void takePicture() {
         if (safeToTakePicture) {
-            mCamera.takePicture(shutterCallback, null, photoCallback);
+            mCamera.takePicture(shutterCallback, rawPictureCallback, photoCallback);
             safeToTakePicture = false;
         }
     }
@@ -173,24 +194,13 @@ public class CameraManager {
         public void onPictureTaken(byte[] data, Camera arg1) {
             // TODO Auto-generated method stub
             Log.d("TAG", "onPictureTaken - raw");
-            byte[] photo = data;
-            new SavePhotoTask().execute(photo);
-            mCamera.startPreview();
-            safeToTakePicture = true;
         }
     };
-
-    class SaveRawPhotoTask extends AsyncTask<byte[], String, String> {
-        @Override
-        protected String doInBackground(byte[]... raw) {
-            Bitmap bm = BitmapFactory.decodeByteArray(raw[0], 0, raw[0].length);
-            return (null);
-        }
-    }
 
     private Camera.PictureCallback photoCallback = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
+            Log.d("TAG", "onPictureTaken - jpeg");
             byte[] photo = data;
             new SavePhotoTask().execute(photo);
             mCamera.startPreview();
@@ -246,6 +256,14 @@ public class CameraManager {
         return photo;
     }
 
+    public void setPictureSize(){
+        Camera.Parameters parameters = getCameraParameters();
+        setCameraDisplayOrientation(0, parameters);
+        List<Camera.Size> psSize = parameters.getSupportedPictureSizes();
+        parameters.setPictureSize(psSize.get(0).width, psSize.get(0).height);
+        setCameraParameters(parameters);
+    }
+
     public void setCameraPic(int i) {
         Camera.Parameters parameters = getCameraParameters();
         List<Camera.Size> psSize = parameters.getSupportedPictureSizes();
@@ -256,7 +274,13 @@ public class CameraManager {
         Toast.makeText(mContext.getApplicationContext(), w + "*" + h, Toast.LENGTH_SHORT).show();
     }
 
-    public void ShowWhatView(String name) {
-        Toast.makeText(mContext.getApplicationContext(), name, Toast.LENGTH_SHORT).show();
+
+    public void onPauseTasks() {
+        stopPreview();
+    }
+
+    public void onDestroyTasks() {
+        stopPreview();
+        releaseCamera();
     }
 }

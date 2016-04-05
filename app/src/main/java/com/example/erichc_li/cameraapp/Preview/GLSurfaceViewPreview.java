@@ -6,10 +6,7 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
-
-import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
-import com.example.erichc_li.cameraapp.ViewProcessing.SurfaceTextureProcessing;
-import com.example.erichc_li.cameraapp.ViewProcessing.ViewProcessing;
+import android.view.View;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -19,45 +16,42 @@ import java.nio.ShortBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class GLSurfaceViewPreview extends GLSurfaceView implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener {
+public class GLSurfaceViewPreview extends Preview implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener {
 
     private static final String TAG = GLSurfaceViewPreview.class.getName();
+    private final GLSurfaceView mGLSurfaceView;
 
-    private CameraManager mCameraManager;
     private SurfaceTexture mSurfaceTexture;
-    private final ViewProcessing mViewProcessing;
 
     private int mTextureID;
     private DirectDrawer mDirectDrawer;
 
-    public GLSurfaceViewPreview(Context context, CameraManager camera) {
+    public GLSurfaceViewPreview(Context context) {
         super(context);
-        mCameraManager = camera;
-        setEGLContextClientVersion(2);
-        setRenderer(this);
-        mViewProcessing = new SurfaceTextureProcessing(mCameraManager);
+        mGLSurfaceView = new GLSurfaceView(context);
+        mGLSurfaceView.setEGLContextClientVersion(2);
+        mGLSurfaceView.setRenderer(this);
         mTextureID = createTextureID();
         mSurfaceTexture = new SurfaceTexture(mTextureID);
         mSurfaceTexture.setOnFrameAvailableListener(this);
-        mCameraManager.ShowWhatView("GLSurfaceViewPreview");
+        ShowWhatView("GLSurfaceViewPreview");
     }
 
     @Override
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-        requestRender();
+        mGLSurfaceView.requestRender();
     }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Log.i(TAG, "surfaceCreated...");
         mDirectDrawer = new DirectDrawer(mTextureID);
-        mViewProcessing.viewCreated(mSurfaceTexture);
+        setSurface(mSurfaceTexture);
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         Log.i(TAG, "surfaceChanged...");
-        mViewProcessing.viewChanged(mSurfaceTexture);
     }
 
     @Override
@@ -79,6 +73,11 @@ public class GLSurfaceViewPreview extends GLSurfaceView implements GLSurfaceView
         GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
 
         return texture[0];
+    }
+
+    @Override
+    public View getView() {
+        return mGLSurfaceView;
     }
 
     public class DirectDrawer {

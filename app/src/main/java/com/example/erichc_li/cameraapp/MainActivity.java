@@ -2,7 +2,6 @@ package com.example.erichc_li.cameraapp;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,24 +11,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
-
-import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
-import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
-import com.example.erichc_li.cameraapp.Preview.GLSurfaceViewPreview;
-import com.example.erichc_li.cameraapp.Preview.OthersPreview;
-import com.example.erichc_li.cameraapp.Preview.SurfaceViewPreview;
-import com.example.erichc_li.cameraapp.Preview.TextureViewPreview;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getName();
-    private CameraManager mCameraManager;
-    private FrameLayout mFrameLayout;
-    public static FrameLayout mFrameLayout2;
-    private View mPreview;
-    private Camera mCamera;
+
+    private static final int PREVIEW_TEXTUREVIEW = R.id.View1;
+    private static final int PREVIEW_SURFACEVIEW = R.id.View2;
+    private static final int PREVIEW_GLSURFACEVIEW = R.id.View3;
+
+    private Controller mController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,29 +36,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Capture Success.", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                mCameraManager.takePicture();
+//                mCameraManager.takePicture();
             }
         });
 
-        mFrameLayout = (FrameLayout) findViewById(R.id.camera_textureview);
-        mFrameLayout2 = (FrameLayout) findViewById(R.id.camera_textureview2);
+        mController = new Controller(this);
 
-        mCamera = getCameraInstance();
-
-        mCameraManager = new CameraManager(this,mCamera);
-        mPreview = new TextureViewPreview(this, mCameraManager);
-        mFrameLayout.addView(mPreview);
-
-    }
-
-    public Camera getCameraInstance() {
-        Camera c = null;
-        try {
-            c = Camera.open();
-        } catch (Exception ioe) {
-            ioe.printStackTrace();
-        }
-        return c;
     }
 
     @Override
@@ -83,30 +58,19 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        mFrameLayout.removeAllViews();
+        mController.removeAllViews();
 
         //noinspection SimplifiableIfStatement
         switch (id) {
-            case R.id.View1:
-                mCameraManager = new CameraManager(this,mCamera);
-                mPreview = new TextureViewPreview (this, mCameraManager);
-                mFrameLayout.addView(mPreview);
-                return true;
-            case R.id.View2:
-                mCameraManager = new CameraManager(this,mCamera);
-                mPreview = new SurfaceViewPreview(this, mCameraManager);
-                mFrameLayout.addView(mPreview);
-                return true;
-            case R.id.View3:
-                mCameraManager = new CameraManager(this,mCamera);
-                mPreview = new GLSurfaceViewPreview(this, mCameraManager);
-                mFrameLayout.addView(mPreview);
-                return true;
-            case R.id.View4:
-                mCameraManager = new CameraSensorManager(this,mCamera);
-                mPreview = new OthersPreview(this, (CameraSensorManager) mCameraManager);
-                mFrameLayout.addView(mPreview);
-                return true;
+            case PREVIEW_TEXTUREVIEW:
+//                mController.configCameraView(PREVIEW_TEXTUREVIEW);
+                break;
+            case PREVIEW_SURFACEVIEW:
+//                mController.configCameraView(PREVIEW_SURFACEVIEW);
+                break;
+            case PREVIEW_GLSURFACEVIEW:
+//                mController.configCameraView(PREVIEW_GLSURFACEVIEW);
+                break;
             default:
                 break;
         }
@@ -118,22 +82,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.i(TAG, "onResume()...");
+        mController.executeResume();
     }
 
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
         Log.i(TAG, "onPause()...");
+        mController.executePause();
     }
 
     @Override
-    protected void onStart(){
+    protected void onStart() {
         super.onStart();
         Log.i(TAG, "onStart()...");
     }
 
     @Override
-    protected void onRestart(){
+    protected void onRestart() {
         super.onRestart();
         Log.i(TAG, "onRestart()...");
     }
@@ -142,13 +108,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         Log.i(TAG, "onStop()...");
+        mController.executeStop();
     }
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "onDestroy()...");
-        mCameraManager.releaseCamera();
+        mController.executeDestroy();
     }
 
     private AlertDialog createAlertDialog(String title, String msg, String buttonText) {
