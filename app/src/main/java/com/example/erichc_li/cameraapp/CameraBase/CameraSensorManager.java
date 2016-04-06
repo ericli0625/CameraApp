@@ -62,4 +62,17 @@ public class CameraSensorManager extends CameraManager implements SensorEventLis
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
+    @Override
+    public void onPauseTasks() {
+        super.onPauseTasks();
+        unregisterSensorListener();
+    }
+
+    @Override
+    public void onDestroyTasks(){
+        super.onDestroyTasks();
+
+    }
+
 }

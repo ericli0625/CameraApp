@@ -1,4 +1,4 @@
-package com.example.erichc_li.cameraapp;
+package com.example.erichc_li.cameraapp.Component.FocusMeter;
 
 import android.content.Context;
 import android.graphics.Canvas;

@@ -34,6 +34,7 @@ public class CameraManager {
     Camera.Parameters parameters;
     private int mRotation;
     private boolean safeToTakePicture = false;
+    private boolean mFocusing = false;
 
     public CameraManager(Context context, Camera camera) {
         mContext = context;
@@ -107,11 +108,15 @@ public class CameraManager {
     }
 
     public void cancelAutoFocus() {
+        mFocusing = false;
         mCamera.cancelAutoFocus();
     }
 
     public void autoFocus() {
-        mCamera.autoFocus(myAutoFocusCallback);
+        if (!mFocusing) {
+            mCamera.autoFocus(myAutoFocusCallback);
+            mFocusing = true;
+        }
     }
 
     Camera.AutoFocusCallback myAutoFocusCallback = new Camera.AutoFocusCallback() {

@@ -1,4 +1,4 @@
-package com.example.erichc_li.cameraapp;
+package com.example.erichc_li.cameraapp.Component.FocusMeter;
 
 import android.app.Activity;
 import android.content.Context;
@@ -7,7 +7,7 @@ import android.hardware.Camera;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import com.example.erichc_li.cameraapp.CameraBase.CameraSensorManager;
+import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +21,9 @@ public class FocusMetering {
     public float oldDis;
     private boolean zoom = false;
 
-    private CameraSensorManager mCameraManager;
+    private CameraManager mCameraManager;
 
-    public FocusMetering(Context context, CameraSensorManager camera) {
+    public FocusMetering(Context context, CameraManager camera) {
         mContext = context;
         mCameraManager = camera;
     }
@@ -36,13 +36,13 @@ public class FocusMetering {
         float newDis = getFingerSpacing(event);
         if (newDis > oldDis) {
             //zoom in
-            Log.i(TAG, "zoom in...");
+//            Log.i(TAG, "zoom in...");
             if (zoomValue < maxZoomLevel) {
                 zoomValue++;
             }
         } else if (newDis < oldDis) {
             //zoom out
-            Log.i(TAG, "zoom out...");
+//            Log.i(TAG, "zoom out...");
             if (zoomValue > 0) {
                 zoomValue--;
             }

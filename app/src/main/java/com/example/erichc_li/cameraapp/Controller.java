@@ -3,9 +3,12 @@ package com.example.erichc_li.cameraapp;
 import android.app.Activity;
 import android.hardware.Camera;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
+import com.example.erichc_li.cameraapp.Component.FocusMeter.FocusMetering;
 import com.example.erichc_li.cameraapp.Preview.Preview;
 import com.example.erichc_li.cameraapp.Preview.PreviewFactory;
 import com.example.erichc_li.cameraapp.UI.SampleUI;
@@ -26,6 +29,9 @@ public class Controller {
     private CameraManager mCameraManager;
     private Camera mCamera;
     private SampleUI mUI;
+
+    //Component
+    private FocusMetering mFocusMetering;
 
     public Controller(Activity context) {
         mActivity = context;
@@ -77,17 +83,14 @@ public class Controller {
     private void initPreview() {
 
         Log.i(TAG, "initPreview...");
-        createCameraPreview(PREVIEW_TEXTUREVIEW);
 
-        mUI.addCameraPreview(mPreview.getView());
+        mPreview = createCameraPreview(PREVIEW_TEXTUREVIEW);
 
-        if (!mCameraManager.equals("") && mCameraManager != null) {
-            mPreview.setCamera(mCameraManager);
-        } else {
-            Log.i(TAG, "mCameraManager is null");
-        }
+        mPreview.setCamera(mCameraManager);
 
         mPreview.setPreviewListener(mPreviewListener);
+
+        mUI.addCameraPreview(mPreview.getView());
 
     }
 
@@ -99,28 +102,67 @@ public class Controller {
         }
     };
 
-    private void createCameraPreview(int id) {
+    private Preview createCameraPreview(int id) {
+
+        Preview preview = null;
 
         switch (id) {
             case PREVIEW_TEXTUREVIEW:
-                mPreview = PreviewFactory.createTextureView(mActivity);
+                preview = PreviewFactory.createTextureView(mActivity);
                 break;
             case PREVIEW_SURFACEVIEW:
-                mPreview = PreviewFactory.createSurfaceView(mActivity);
+                preview = PreviewFactory.createSurfaceView(mActivity);
                 break;
             case PREVIEW_GLSURFACEVIEW:
-                mPreview = PreviewFactory.createGLSurfaceView(mActivity);
+                preview = PreviewFactory.createGLSurfaceView(mActivity);
                 break;
             default:
                 break;
         }
 
+        return preview;
     }
+
+    public void configComponent() {
+
+        Log.i(TAG, "configComponent...");
+        mFocusMetering = new FocusMetering(mActivity, mCameraManager);
+        mUI.setTouchEventListener(mTouchEventListener);
+
+    }
+
+    private UI.TouchEventListener mTouchEventListener = new UI.TouchEventListener() {
+
+        @Override
+        public void onTouchEvent(View v, MotionEvent event) {
+
+            Camera.Parameters parameters = mCameraManager.getCameraParameters();
+            int action = event.getAction() & MotionEvent.ACTION_MASK;
+
+            if (event.getPointerCount() > 1) {
+                if (action == MotionEvent.ACTION_POINTER_DOWN) {
+//                    Log.i(TAG, "ACTION_POINTER_DOWN");
+                    mFocusMetering.oldDis = mFocusMetering.getFingerSpacing(event);
+                } else if (action == MotionEvent.ACTION_MOVE && parameters.isZoomSupported()) {
+//                    Log.i(TAG, "ACTION_MOVE");
+                    mCameraManager.cancelAutoFocus();
+                    mFocusMetering.handleZoom(event);
+                }
+            } else {
+                if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
+//                    Log.i(TAG, "ACTION_UP || ACTION_DOWN");
+                    mCameraManager.cancelAutoFocus();
+                    mFocusMetering.handleFocus(event, action);
+                }
+            }
+        }
+    };
 
     public void executeResume() {
         initUI();
         initCamera();
         initPreview();
+        configComponent();
     }
 
     public void executePause() {
@@ -155,6 +197,7 @@ public class Controller {
         mPreview = null;
         mCameraManager = null;
         mUI = null;
+        mFocusMetering = null;
 
     }
 

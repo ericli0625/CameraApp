@@ -3,6 +3,7 @@ package com.example.erichc_li.cameraapp.UI;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -10,6 +11,7 @@ public abstract class UI {
 
     private Activity mActivity;
     private CaptureButtonListener mCaptureButtonListener = null;
+    private TouchEventListener mTouchEventListener = null;
 
     protected UI(Activity activity) {
         mActivity = activity;
@@ -23,8 +25,16 @@ public abstract class UI {
         public abstract void onCaptureButtonClick();
     }
 
+    public interface TouchEventListener {
+        public abstract void onTouchEvent(View v, MotionEvent event);
+    }
+
     public void setCaptureButtonListener(CaptureButtonListener listener) {
         mCaptureButtonListener = listener;
+    }
+
+    public void setTouchEventListener(TouchEventListener listener) {
+        mTouchEventListener = listener;
     }
 
     protected Activity getActivity() {
@@ -42,6 +52,11 @@ public abstract class UI {
     protected void handleCaptureButtonClick() {
         if (mCaptureButtonListener != null)
             mCaptureButtonListener.onCaptureButtonClick();
+    }
+
+    protected void handleTouchEvent(View v, MotionEvent event) {
+        if (mTouchEventListener != null)
+            mTouchEventListener.onTouchEvent(v, event);
     }
 
     private AlertDialog createAlertDialog(String title, String msg, String buttonText) {
