@@ -18,7 +18,6 @@ public class SampleUI extends UI {
 
     private final AppCompatActivity mAppCompatActivity;
     private FrameLayout mFrameLayout;
-    private FrameLayout mFrameLayout2;
 
     public SampleUI(Activity activity) {
         super(activity);
@@ -37,7 +36,6 @@ public class SampleUI extends UI {
         fab.setOnClickListener(mOnClickListener);
 
         mFrameLayout = (FrameLayout) getActivity().findViewById(R.id.camera_textureview);
-        mFrameLayout2 = (FrameLayout) getActivity().findViewById(R.id.camera_textureview2);
 
         mFrameLayout.setOnTouchListener(mOnTouchListener);
 
@@ -46,6 +44,11 @@ public class SampleUI extends UI {
     @Override
     public void addCameraPreview(View view) {
         mFrameLayout.addView(view);
+    }
+
+    @Override
+    public FrameLayout getFrameLayout() {
+         return mFrameLayout;
     }
 
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -59,11 +62,7 @@ public class SampleUI extends UI {
     private View.OnTouchListener mOnTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-
-            mFrameLayout2.removeAllViews();
-
             handleTouchEvent(v, event);
-
             return true;
         }
     };

@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
+import com.example.erichc_li.cameraapp.UI.UI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,16 +17,18 @@ public class FocusMetering {
 
     private static final String TAG = FocusMetering.class.getName();
 
-    private final Context mContext;
+    private Context mContext;
+    private UI mUI;
     private int maxZoomLevel;
-    public float oldDis;
-    private boolean zoom = false;
+    private float oldDis;
+    private boolean mZoom = false;
 
     private CameraManager mCameraManager;
 
-    public FocusMetering(Context context, CameraManager camera) {
+    public FocusMetering(Context context, CameraManager camera, UI ui) {
         mContext = context;
         mCameraManager = camera;
+        mUI = ui;
     }
 
     public void handleZoom(MotionEvent event) {
@@ -34,13 +37,13 @@ public class FocusMetering {
         maxZoomLevel = params.getMaxZoom();
         int zoomValue = params.getZoom();
         float newDis = getFingerSpacing(event);
-        if (newDis > oldDis) {
+        if (newDis > getOldDis()) {
             //zoom in
 //            Log.i(TAG, "zoom in...");
             if (zoomValue < maxZoomLevel) {
                 zoomValue++;
             }
-        } else if (newDis < oldDis) {
+        } else if (newDis < getOldDis()) {
             //zoom out
 //            Log.i(TAG, "zoom out...");
             if (zoomValue > 0) {
@@ -48,10 +51,18 @@ public class FocusMetering {
             }
         }
 
-        zoom = true;
-        oldDis = newDis;
+        setZoom(true);
+        setOldDis(newDis);
         params.setZoom(zoomValue);
         mCameraManager.setCameraParameters(params);
+    }
+
+    public void setOldDis(float value){
+        oldDis = value;
+    }
+
+    public float getOldDis(){
+        return oldDis;
     }
 
     public void handleFocus(MotionEvent event, int action) {
@@ -60,7 +71,6 @@ public class FocusMetering {
         // Get the pointer's current position
         final float x = event.getX(pointerIndex);
         final float y = event.getY(pointerIndex);
-        //Log.i(TAG, "x = " + x + ", y = " + y);
 
         Camera.Parameters params = mCameraManager.getCameraParameters();
 
@@ -86,11 +96,12 @@ public class FocusMetering {
                 params.setMeteringAreas(meteringAreas);
             }
 
-            if (action == MotionEvent.ACTION_UP && zoom != true) {
+            if (action == MotionEvent.ACTION_UP && mZoom != true) {
+                Log.i(TAG, "MotionEvent.ACTION_UP && zoom != true");
                 SquareView mSquareView = new SquareView(mContext, x, y);
-//                MainActivity.mFrameLayout2.addView(mSquareView);
-            } else if (action == MotionEvent.ACTION_DOWN && zoom == true) {
-                zoom = false;
+                mUI.getFrameLayout().addView(mSquareView,1);
+            } else if (action == MotionEvent.ACTION_UP && mZoom == true) {
+                Log.i(TAG, "MotionEvent.ACTION_UP && zoom == true");
             }
 
             mCameraManager.setCameraParameters(params);
@@ -98,6 +109,14 @@ public class FocusMetering {
 
         }
 
+    }
+
+    public void setZoom(boolean value){
+        mZoom = value;
+    }
+
+    public boolean getZoom(){
+         return mZoom;
     }
 
     private Rect calculateTapArea(float x, float y, float coefficient) {
@@ -112,20 +131,6 @@ public class FocusMetering {
         //Log.i(TAG, "(x / this.getWidth()) = " +  (x / this.getWidth()) + ", (y / this.getHeight()) = " + (y / this.getHeight()));
 
         //Log.i(TAG, "centerX = " +centerX+", centerY = "+centerY);
-
-        if (centerX < 1 && centerY < 1) {
-            centerY *= (-1);
-            //Log.i(TAG, "1 centerX = " +centerX+", centerY = "+centerY);
-        } else if (centerX > 1 && centerY < 1) {
-            centerX *= (-1);
-            //Log.i(TAG, "2 centerX = " +centerX+", centerY = "+centerY);
-        } else if (centerX > 1 && centerY > 1) {
-            centerY *= (-1);
-            //Log.i(TAG, "3 centerX = " +centerX+", centerY = "+centerY);
-        } else if (centerX < 1 && centerY > 1) {
-            centerX *= (-1);
-            //Log.i(TAG, "4 centerX = " +centerX+", centerY = "+centerY);
-        }
 
         int left = clamp(centerX - areaSize / 2, -1000, 1000);
         int right = clamp(left + areaSize, -1000, 1000);

@@ -28,7 +28,7 @@ public class Controller {
 
     private CameraManager mCameraManager;
     private Camera mCamera;
-    private SampleUI mUI;
+    private UI mUI;
 
     //Component
     private FocusMetering mFocusMetering;
@@ -126,10 +126,32 @@ public class Controller {
     public void configComponent() {
 
         Log.i(TAG, "configComponent...");
-        mFocusMetering = new FocusMetering(mActivity, mCameraManager);
+        mFocusMetering = new FocusMetering(mActivity, mCameraManager, mUI);
         mUI.setTouchEventListener(mTouchEventListener);
+        mCameraManager.setTouchEventListener(mTouchFocusListener);
 
     }
+
+    private CameraManager.TouchFocusListener mTouchFocusListener = new CameraManager.TouchFocusListener(){
+
+        @Override
+        public void onTouchFocus(boolean success) {
+
+            if (success) {
+                Log.i(TAG, "聚焦成功...");
+            } else {
+                Log.i(TAG, "聚焦失敗...");
+            }
+
+            if (mFocusMetering.getZoom() == false && !mCameraManager.isFocusing()) {
+                mUI.getFrameLayout().removeViewAt(1);
+            } else {
+                mFocusMetering.setZoom(false);
+            }
+
+        }
+
+    };
 
     private UI.TouchEventListener mTouchEventListener = new UI.TouchEventListener() {
 
@@ -142,15 +164,15 @@ public class Controller {
             if (event.getPointerCount() > 1) {
                 if (action == MotionEvent.ACTION_POINTER_DOWN) {
 //                    Log.i(TAG, "ACTION_POINTER_DOWN");
-                    mFocusMetering.oldDis = mFocusMetering.getFingerSpacing(event);
+                    mFocusMetering.setOldDis(mFocusMetering.getFingerSpacing(event));
                 } else if (action == MotionEvent.ACTION_MOVE && parameters.isZoomSupported()) {
 //                    Log.i(TAG, "ACTION_MOVE");
                     mCameraManager.cancelAutoFocus();
                     mFocusMetering.handleZoom(event);
                 }
             } else {
-                if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
-//                    Log.i(TAG, "ACTION_UP || ACTION_DOWN");
+                if (action == MotionEvent.ACTION_UP) {
+//                    Log.i(TAG, "ACTION_UP");
                     mCameraManager.cancelAutoFocus();
                     mFocusMetering.handleFocus(event, action);
                 }

@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 
 public abstract class UI {
 
@@ -20,6 +21,8 @@ public abstract class UI {
     public abstract void init();
 
     public abstract void addCameraPreview(View view);
+
+    public abstract FrameLayout getFrameLayout();
 
     public interface CaptureButtonListener {
         public abstract void onCaptureButtonClick();

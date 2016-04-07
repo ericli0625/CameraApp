@@ -36,6 +36,8 @@ public class CameraManager {
     private boolean safeToTakePicture = false;
     private boolean mFocusing = false;
 
+    private TouchFocusListener mTouchFocusListener = null;
+
     public CameraManager(Context context, Camera camera) {
         mContext = context;
         mCamera = camera;
@@ -81,7 +83,8 @@ public class CameraManager {
     }
 
     public void setCameraParameters(Camera.Parameters parameters) {
-        mCamera.setParameters(parameters);
+        if (!parameters.equals("") && parameters != null)
+            mCamera.setParameters(parameters);
     }
 
     public Camera getCamera() {
@@ -108,15 +111,30 @@ public class CameraManager {
     }
 
     public void cancelAutoFocus() {
-        mFocusing = false;
+        setFocusing(false);
         mCamera.cancelAutoFocus();
     }
 
-    public void autoFocus() {
-        if (!mFocusing) {
+    synchronized public void autoFocus() {
+        if (!isFocusing()) {
             mCamera.autoFocus(myAutoFocusCallback);
-            mFocusing = true;
         }
+    }
+
+    public void setFocusing(boolean value){
+        mFocusing = value;
+    }
+
+    public boolean isFocusing(){
+        return mFocusing;
+    }
+
+    public interface TouchFocusListener {
+        public abstract void onTouchFocus(boolean success);
+    }
+
+    public void setTouchEventListener(TouchFocusListener listener) {
+        mTouchFocusListener = listener;
     }
 
     Camera.AutoFocusCallback myAutoFocusCallback = new Camera.AutoFocusCallback() {
@@ -125,13 +143,11 @@ public class CameraManager {
         public void onAutoFocus(boolean success, Camera camera) {
             // currently set to auto-focus on single touch
             if (success) {
-                Log.i(TAG, "聚焦成功...");
-//                MainActivity.mFrameLayout2.removeAllViews();
+                mTouchFocusListener.onTouchFocus(false);
             } else {
-                Log.i(TAG, "聚焦失敗...");
-//                MainActivity.mFrameLayout2.removeAllViews();
+                mTouchFocusListener.onTouchFocus(true);
             }
-
+            setFocusing(true);
         }
     };
 
