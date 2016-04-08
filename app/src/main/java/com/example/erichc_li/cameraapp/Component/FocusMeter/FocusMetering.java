@@ -2,10 +2,14 @@ package com.example.erichc_li.cameraapp.Component.FocusMeter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
 import com.example.erichc_li.cameraapp.UI.UI;
@@ -24,6 +28,32 @@ public class FocusMetering {
     private boolean mZoom = false;
 
     private CameraManager mCameraManager;
+
+    public class SquareView extends View {
+
+        private static final String TAG = "SquareView";
+        private float mX, mY;
+
+        public SquareView(Context context, float x, float y) {
+            super(context);
+            mX = x;
+            mY = y;
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            //Log.d(TAG, "Draw Square");
+
+            Paint p = new Paint();
+            p.setColor(Color.YELLOW);
+            p.setAntiAlias(true);
+            p.setStyle(Paint.Style.STROKE);
+
+            canvas.drawCircle(mX, mY, 80, p);
+
+        }
+    }
 
     public FocusMetering(Context context, CameraManager camera, UI ui) {
         mContext = context;
@@ -57,11 +87,11 @@ public class FocusMetering {
         mCameraManager.setCameraParameters(params);
     }
 
-    public void setOldDis(float value){
+    public void setOldDis(float value) {
         oldDis = value;
     }
 
-    public float getOldDis(){
+    public float getOldDis() {
         return oldDis;
     }
 
@@ -96,14 +126,20 @@ public class FocusMetering {
                 params.setMeteringAreas(meteringAreas);
             }
 
-            if (action == MotionEvent.ACTION_UP && mZoom != true) {
+            if (action == MotionEvent.ACTION_UP && !getZoom()) {
                 Log.i(TAG, "MotionEvent.ACTION_UP && zoom != true");
+                //Dismiss FocusView when touch screen
+                if (mUI.getFrameLayout().getChildCount() == 2) {
+                    mUI.getFrameLayout().removeViewAt(1);
+                }
                 SquareView mSquareView = new SquareView(mContext, x, y);
-                mUI.getFrameLayout().addView(mSquareView,1);
-            } else if (action == MotionEvent.ACTION_UP && mZoom == true) {
+                mUI.getFrameLayout().addView(mSquareView, 1);
+            } else if (action == MotionEvent.ACTION_UP && getZoom()) {
                 Log.i(TAG, "MotionEvent.ACTION_UP && zoom == true");
+                setZoom(false);
             }
 
+            mCameraManager.increaseTouchEvent();
             mCameraManager.setCameraParameters(params);
             mCameraManager.autoFocus();
 
@@ -111,12 +147,12 @@ public class FocusMetering {
 
     }
 
-    public void setZoom(boolean value){
+    public void setZoom(boolean value) {
         mZoom = value;
     }
 
-    public boolean getZoom(){
-         return mZoom;
+    public boolean getZoom() {
+        return mZoom;
     }
 
     private Rect calculateTapArea(float x, float y, float coefficient) {

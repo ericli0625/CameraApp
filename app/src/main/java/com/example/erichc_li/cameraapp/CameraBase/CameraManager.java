@@ -34,7 +34,7 @@ public class CameraManager {
     Camera.Parameters parameters;
     private int mRotation;
     private boolean safeToTakePicture = false;
-    private boolean mFocusing = false;
+    private int mCount = 0;
 
     private TouchFocusListener mTouchFocusListener = null;
 
@@ -111,22 +111,25 @@ public class CameraManager {
     }
 
     public void cancelAutoFocus() {
-        setFocusing(false);
         mCamera.cancelAutoFocus();
     }
 
-    synchronized public void autoFocus() {
-        if (!isFocusing()) {
-            mCamera.autoFocus(myAutoFocusCallback);
-        }
+    public void autoFocus() {
+        Log.i(TAG, "autoFocus() E");
+        mCamera.autoFocus(myAutoFocusCallback);
+        Log.i(TAG, "autoFocus() X");
     }
 
-    public void setFocusing(boolean value){
-        mFocusing = value;
+    public void increaseTouchEvent(){
+        mCount++;
     }
 
-    public boolean isFocusing(){
-        return mFocusing;
+    public void discreteTouchEvent(){
+        mCount--;
+    }
+
+    public int getTouchEvent(){
+        return mCount;
     }
 
     public interface TouchFocusListener {
@@ -142,12 +145,10 @@ public class CameraManager {
         @Override
         public void onAutoFocus(boolean success, Camera camera) {
             // currently set to auto-focus on single touch
-            if (success) {
-                mTouchFocusListener.onTouchFocus(false);
-            } else {
-                mTouchFocusListener.onTouchFocus(true);
-            }
-            setFocusing(true);
+            Log.i(TAG, "myAutoFocusCallback onAutoFocus() E");
+            mTouchFocusListener.onTouchFocus(success);
+            Log.i(TAG, "myAutoFocusCallback onAutoFocus() X");
+            discreteTouchEvent();
         }
     };
 

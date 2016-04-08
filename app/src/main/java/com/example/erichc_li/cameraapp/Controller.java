@@ -137,18 +137,22 @@ public class Controller {
         @Override
         public void onTouchFocus(boolean success) {
 
+            Log.i(TAG, "mTouchFocusListener onTouchFocus() E");
             if (success) {
                 Log.i(TAG, "聚焦成功...");
             } else {
                 Log.i(TAG, "聚焦失敗...");
             }
 
-            if (mFocusMetering.getZoom() == false && !mCameraManager.isFocusing()) {
+            Log.i(TAG, "onTouchFocus getChildCount() = "+mUI.getFrameLayout().getChildCount() + " E");
+
+            //Dismiss FocusView when focused
+            if (mUI.getFrameLayout().getChildCount() == 2 && mCameraManager.getTouchEvent() == 1) {
                 mUI.getFrameLayout().removeViewAt(1);
-            } else {
-                mFocusMetering.setZoom(false);
             }
 
+            Log.i(TAG, "onTouchFocus getChildCount() = "+mUI.getFrameLayout().getChildCount() + " X");
+            Log.i(TAG, "mTouchFocusListener onTouchFocus() X");
         }
 
     };
