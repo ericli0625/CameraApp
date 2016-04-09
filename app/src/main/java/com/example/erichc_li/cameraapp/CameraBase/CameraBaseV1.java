@@ -2,23 +2,28 @@ package com.example.erichc_li.cameraapp.CameraBase;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
 public class CameraBaseV1 extends CameraBase {
 
     private static final String TAG = CameraBase.class.getName();
-    private final Context mContext;
 
     Camera mCamera;
     Camera.Parameters parameters;
@@ -27,11 +32,11 @@ public class CameraBaseV1 extends CameraBase {
 
     public CameraBaseV1(Context context) {
         super(context);
-        mContext = context;
         openCamera();
     }
 
-    private void openCamera() {
+    @Override
+    public void openCamera() {
         mCamera = getCameraInstance();
     }
 
@@ -51,7 +56,7 @@ public class CameraBaseV1 extends CameraBase {
         android.hardware.Camera.getCameraInfo(cameraId, info);
         Camera.Parameters mParameters = (Camera.Parameters) parameters;
 
-        mRotation = ((Activity) mContext).getWindowManager().getDefaultDisplay().getRotation();
+        mRotation = ((Activity) getContext()).getWindowManager().getDefaultDisplay().getRotation();
 
         int degrees = 0;
         switch (mRotation) {
@@ -173,11 +178,11 @@ public class CameraBaseV1 extends CameraBase {
         @Override
         public void onShutter() {
             try {
-                AudioManager meng = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+                AudioManager meng = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
                 int volume = meng.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
                 if (volume != 0) {
                     if (mShootSound == null) {
-                        mShootSound = MediaPlayer.create(mContext, Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
+                        mShootSound = MediaPlayer.create(getContext(), Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
                     }
                     if (mShootSound != null) {
                         mShootSound.start();
@@ -208,8 +213,37 @@ public class CameraBaseV1 extends CameraBase {
         }
     };
 
+    class SavePhotoTask extends AsyncTask<byte[], String, String> {
+        @Override
+        protected String doInBackground(byte[]... jpeg) {
+
+            if (jpeg[0] == null) {
+                Log.e(TAG, "jpeg[0] is null");
+                return (null);
+            }
+
+            File photoPath = getOutputMediaFile();
+            Bitmap pictureTaken = BitmapFactory.decodeByteArray(jpeg[0], 0, jpeg[0].length);
+            Matrix matrix = new Matrix();
+            matrix.preRotate(90);
+            pictureTaken = Bitmap.createBitmap(pictureTaken, 0, 0, pictureTaken.getWidth(), pictureTaken.getHeight(), matrix, true);
+
+            try {
+                FileOutputStream fos = new FileOutputStream(photoPath.getPath());
+                pictureTaken.compress(Bitmap.CompressFormat.JPEG, 50, fos);
+                pictureTaken.recycle();
+                fos.write(jpeg[0]);
+                fos.close();
+                galleryAddPic(photoPath);
+            } catch (java.io.IOException e) {
+                Log.e(TAG, "Exception in photoCallback", e);
+            }
+            return (null);
+        }
+    }
+
     @Override
-    public void setPictureSize() {
+    public void setPictureSize(int i) {
         Camera.Parameters parameters = getCameraParameters();
         setCameraDisplayOrientation(0, parameters);
         List<Camera.Size> psSize = parameters.getSupportedPictureSizes();
@@ -225,7 +259,7 @@ public class CameraBaseV1 extends CameraBase {
         int h = psSize.get(i).height;
         parameters.setPictureSize(w, h);
         setCameraParameters(parameters);
-        Toast.makeText(mContext.getApplicationContext(), w + "*" + h, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext().getApplicationContext(), w + "*" + h, Toast.LENGTH_SHORT).show();
     }
 
     @Override

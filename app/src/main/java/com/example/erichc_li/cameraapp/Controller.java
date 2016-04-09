@@ -1,6 +1,7 @@
 package com.example.erichc_li.cameraapp;
 
 import android.app.Activity;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -8,6 +9,7 @@ import android.view.MotionEvent;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraBase;
 import com.example.erichc_li.cameraapp.CameraBase.CameraBaseV1;
+import com.example.erichc_li.cameraapp.CameraBase.CameraFactory;
 import com.example.erichc_li.cameraapp.Component.FocusMeter.FocusMetering;
 import com.example.erichc_li.cameraapp.Preview.Preview;
 import com.example.erichc_li.cameraapp.Preview.PreviewFactory;
@@ -22,6 +24,9 @@ public class Controller {
     private static final int PREVIEW_TEXTUREVIEW = R.id.View1;
     private static final int PREVIEW_SURFACEVIEW = R.id.View2;
     private static final int PREVIEW_GLSURFACEVIEW = R.id.View3;
+
+    private static final int CAMBASEV1 = 0;
+    private static final int CAMBASEV2 = 1;
 
     private Activity mActivity;
     private Preview mPreview;
@@ -55,13 +60,31 @@ public class Controller {
     private void initCamera() {
 
         Log.i(TAG, "initCamera...");
-        mCameraBase = new CameraBaseV1(mActivity);
+        mCameraBase = createCameraBase(CAMBASEV2);
         if (mCameraBase.getCamera() != null) {
-            mCameraBase.setPictureSize();
+            mCameraBase.setPictureSize(ImageFormat.JPEG);
         } else {
             Log.i(TAG, "mCamera is null");
         }
 
+    }
+
+    private CameraBase createCameraBase(int id) {
+
+        CameraBase mCameraBase = null;
+
+        switch (id) {
+            case CAMBASEV1:
+                mCameraBase = CameraFactory.createCameraBaseV1(mActivity);
+                break;
+            case CAMBASEV2:
+                mCameraBase = CameraFactory.createCameraBaseV2(mActivity);
+                break;
+            default:
+                break;
+        }
+
+        return mCameraBase;
     }
 
     private void initPreview() {
@@ -109,11 +132,12 @@ public class Controller {
 
     public void configComponent() {
 
-        Log.i(TAG, "configComponent...");
-        mFocusMetering = new FocusMetering(mActivity, mCameraBase, mUI);
-        mUI.setGestureListener(mGestureListener);
-        mCameraBase.setTouchEventListener(mTouchFocusListener);
-
+        if (false) {
+            Log.i(TAG, "configComponent...");
+            mFocusMetering = new FocusMetering(mActivity, mCameraBase, mUI);
+            mUI.setGestureListener(mGestureListener);
+            mCameraBase.setTouchEventListener(mTouchFocusListener);
+        }
 
     }
 

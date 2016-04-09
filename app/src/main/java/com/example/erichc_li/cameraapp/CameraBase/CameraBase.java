@@ -2,17 +2,11 @@ package com.example.erichc_li.cameraapp.CameraBase;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -28,6 +22,10 @@ public abstract class CameraBase {
         mContext = context;
     }
 
+    public final Context getContext() {
+        return mContext;
+    }
+
     public interface TouchFocusListener {
         public abstract void onTouchFocus(boolean success);
     }
@@ -35,6 +33,8 @@ public abstract class CameraBase {
     public void setTouchEventListener(CameraBaseV1.TouchFocusListener listener) {
         mTouchFocusListener = listener;
     }
+
+    public abstract void openCamera();
 
     public abstract Object getCameraParameters();
 
@@ -56,35 +56,6 @@ public abstract class CameraBase {
 
     public abstract void setSurface(Object surface);
 
-    class SavePhotoTask extends AsyncTask<byte[], String, String> {
-        @Override
-        protected String doInBackground(byte[]... jpeg) {
-
-            if (jpeg[0] == null) {
-                Log.e(TAG, "jpeg[0] is null");
-                return (null);
-            }
-
-            File photoPath = getOutputMediaFile();
-            Bitmap pictureTaken = BitmapFactory.decodeByteArray(jpeg[0], 0, jpeg[0].length);
-            Matrix matrix = new Matrix();
-            matrix.preRotate(90);
-            pictureTaken = Bitmap.createBitmap(pictureTaken, 0, 0, pictureTaken.getWidth(), pictureTaken.getHeight(), matrix, true);
-
-            try {
-                FileOutputStream fos = new FileOutputStream(photoPath.getPath());
-                pictureTaken.compress(Bitmap.CompressFormat.JPEG, 50, fos);
-                pictureTaken.recycle();
-                fos.write(jpeg[0]);
-                fos.close();
-                galleryAddPic(photoPath);
-            } catch (java.io.IOException e) {
-                Log.e(TAG, "Exception in photoCallback", e);
-            }
-            return (null);
-        }
-    }
-
     public void galleryAddPic(File photoPath) {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         File f = photoPath;
@@ -104,7 +75,7 @@ public abstract class CameraBase {
         return photo;
     }
 
-    public abstract void setPictureSize();
+    public abstract void setPictureSize(int i);
 
     public abstract void setCameraPic(int i);
 
