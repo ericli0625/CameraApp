@@ -2,50 +2,54 @@ package com.example.erichc_li.cameraapp.CameraBase;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
-public class CameraManager {
+public class CameraBaseV1 extends CameraBase {
 
-    private static final String TAG = CameraManager.class.getName();
+    private static final String TAG = CameraBase.class.getName();
     private final Context mContext;
 
     Camera mCamera;
     Camera.Parameters parameters;
     private int mRotation;
     private boolean safeToTakePicture = false;
-    private int mCount = 0;
 
-    private TouchFocusListener mTouchFocusListener = null;
-
-    public CameraManager(Context context, Camera camera) {
+    public CameraBaseV1(Context context) {
+        super(context);
         mContext = context;
-        mCamera = camera;
+        openCamera();
     }
 
-    public void setCameraDisplayOrientation(int cameraId, Camera.Parameters parameters) {
+    private void openCamera() {
+        mCamera = getCameraInstance();
+    }
+
+    private Camera getCameraInstance() {
+        Camera c = null;
+        try {
+            c = Camera.open();
+        } catch (Exception ioe) {
+            ioe.printStackTrace();
+        }
+        return c;
+    }
+
+    public void setCameraDisplayOrientation(int cameraId, Object parameters) {
+
         android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
         android.hardware.Camera.getCameraInfo(cameraId, info);
+        Camera.Parameters mParameters = (Camera.Parameters) parameters;
 
         mRotation = ((Activity) mContext).getWindowManager().getDefaultDisplay().getRotation();
 
@@ -73,24 +77,28 @@ public class CameraManager {
             result = (info.orientation - degrees + 360) % 360;
         }
         mCamera.setDisplayOrientation(result);
-        parameters.setRotation(result);
+        mParameters.setRotation(result);
 
     }
 
+    @Override
     public Camera.Parameters getCameraParameters() {
         parameters = mCamera.getParameters();
         return parameters;
     }
 
-    public void setCameraParameters(Camera.Parameters parameters) {
+    @Override
+    public void setCameraParameters(Object parameters) {
         if (!parameters.equals("") && parameters != null)
-            mCamera.setParameters(parameters);
+            mCamera.setParameters((Camera.Parameters) parameters);
     }
 
+    @Override
     public Camera getCamera() {
         return mCamera;
     }
 
+    @Override
     public void releaseCamera() {
         if (mCamera != null) {
             mCamera.release();
@@ -98,11 +106,13 @@ public class CameraManager {
         }
     }
 
+    @Override
     public void startPreview() {
         mCamera.startPreview();
         safeToTakePicture = true;
     }
 
+    @Override
     public void stopPreview() {
         if (mCamera != null) {
             mCamera.stopPreview();
@@ -110,34 +120,14 @@ public class CameraManager {
         }
     }
 
+    @Override
     public void cancelAutoFocus() {
         mCamera.cancelAutoFocus();
     }
 
+    @Override
     public void autoFocus() {
-        Log.i(TAG, "autoFocus() E");
         mCamera.autoFocus(myAutoFocusCallback);
-        Log.i(TAG, "autoFocus() X");
-    }
-
-    public void increaseTouchEvent(){
-        mCount++;
-    }
-
-    public void discreteTouchEvent(){
-        mCount--;
-    }
-
-    public int getTouchEvent(){
-        return mCount;
-    }
-
-    public interface TouchFocusListener {
-        public abstract void onTouchFocus(boolean success);
-    }
-
-    public void setTouchEventListener(TouchFocusListener listener) {
-        mTouchFocusListener = listener;
     }
 
     Camera.AutoFocusCallback myAutoFocusCallback = new Camera.AutoFocusCallback() {
@@ -145,43 +135,30 @@ public class CameraManager {
         @Override
         public void onAutoFocus(boolean success, Camera camera) {
             // currently set to auto-focus on single touch
-            Log.i(TAG, "myAutoFocusCallback onAutoFocus() E");
+//            Log.i(TAG, "myAutoFocusCallback onAutoFocus() E");
             mTouchFocusListener.onTouchFocus(success);
-            Log.i(TAG, "myAutoFocusCallback onAutoFocus() X");
-            discreteTouchEvent();
+//            Log.i(TAG, "myAutoFocusCallback onAutoFocus() X");
         }
     };
 
-
+    @Override
     public void setSurface(Object surface) {
 
         if (surface instanceof SurfaceHolder) {
-            setPreviewDisplay((SurfaceHolder) surface);
+            try {
+                mCamera.setPreviewDisplay((SurfaceHolder) surface);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else {
-            setPreviewTexture((SurfaceTexture) surface);
+            try {
+                mCamera.setPreviewTexture((SurfaceTexture) surface);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }
-
-    public void setPreviewDisplay(SurfaceHolder mHolder) {
-        Log.i(TAG, "setPreviewDisplay...");
-        try {
-            mCamera.setPreviewDisplay(mHolder);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setPreviewTexture(SurfaceTexture mSurface) {
-        Log.i(TAG, "setPreviewTexture...");
-        try {
-            mCamera.setPreviewTexture(mSurface);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
 
     public void takePicture() {
         if (safeToTakePicture) {
@@ -231,54 +208,7 @@ public class CameraManager {
         }
     };
 
-    class SavePhotoTask extends AsyncTask<byte[], String, String> {
-        @Override
-        protected String doInBackground(byte[]... jpeg) {
-
-            if (jpeg[0] == null) {
-                Log.e(TAG, "jpeg[0] is null");
-                return (null);
-            }
-
-            File photoPath = getOutputMediaFile();
-            Bitmap pictureTaken = BitmapFactory.decodeByteArray(jpeg[0], 0, jpeg[0].length);
-            Matrix matrix = new Matrix();
-            matrix.preRotate(90);
-            pictureTaken = Bitmap.createBitmap(pictureTaken, 0, 0, pictureTaken.getWidth(), pictureTaken.getHeight(), matrix, true);
-
-            try {
-                FileOutputStream fos = new FileOutputStream(photoPath.getPath());
-                pictureTaken.compress(Bitmap.CompressFormat.JPEG, 50, fos);
-                pictureTaken.recycle();
-                fos.write(jpeg[0]);
-                fos.close();
-                galleryAddPic(photoPath);
-            } catch (java.io.IOException e) {
-                Log.e(TAG, "Exception in photoCallback", e);
-            }
-            return (null);
-        }
-    }
-
-    private void galleryAddPic(File photoPath) {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = photoPath;
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        mContext.sendBroadcast(mediaScanIntent);
-    }
-
-    private File getOutputMediaFile() {
-
-        File path = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Camera");
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String photoPath = path.getPath() + File.separator + "IMG_" + timeStamp + ".jpg";
-        Log.i(TAG, photoPath);
-        File photo = new File(photoPath);
-
-        return photo;
-    }
-
+    @Override
     public void setPictureSize() {
         Camera.Parameters parameters = getCameraParameters();
         setCameraDisplayOrientation(0, parameters);
@@ -287,6 +217,7 @@ public class CameraManager {
         setCameraParameters(parameters);
     }
 
+    @Override
     public void setCameraPic(int i) {
         Camera.Parameters parameters = getCameraParameters();
         List<Camera.Size> psSize = parameters.getSupportedPictureSizes();
@@ -297,13 +228,15 @@ public class CameraManager {
         Toast.makeText(mContext.getApplicationContext(), w + "*" + h, Toast.LENGTH_SHORT).show();
     }
 
-
+    @Override
     public void onPauseTasks() {
-        stopPreview();
-    }
-
-    public void onDestroyTasks() {
         stopPreview();
         releaseCamera();
     }
+
+    @Override
+    public void onDestroyTasks() {
+
+    }
+
 }

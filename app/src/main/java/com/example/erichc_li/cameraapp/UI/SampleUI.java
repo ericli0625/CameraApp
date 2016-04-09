@@ -5,7 +5,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -18,6 +19,7 @@ public class SampleUI extends UI {
 
     private final AppCompatActivity mAppCompatActivity;
     private FrameLayout mFrameLayout;
+    private GestureDetector mDetector;
 
     public SampleUI(Activity activity) {
         super(activity);
@@ -48,7 +50,12 @@ public class SampleUI extends UI {
 
     @Override
     public FrameLayout getFrameLayout() {
-         return mFrameLayout;
+        return mFrameLayout;
+    }
+
+    @Override
+    public void setGestureListener(OnGestureListener mListener) {
+        mDetector = new GestureDetector(mAppCompatActivity, mListener);
     }
 
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -62,7 +69,7 @@ public class SampleUI extends UI {
     private View.OnTouchListener mOnTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            handleTouchEvent(v, event);
+            mDetector.onTouchEvent(event);
             return true;
         }
     };

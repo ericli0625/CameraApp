@@ -7,15 +7,14 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-public class CameraSensorManager extends CameraManager implements SensorEventListener {
+public class CameraSensorBase implements SensorEventListener {
 
     private SensorManager mSensorManager;
     private Sensor aSensor;
     private boolean mInitialized;
     private float mLastX, mLastY, mLastZ;
 
-    public CameraSensorManager(Context mContext, Camera mCamera) {
-        super(mContext, mCamera);
+    public CameraSensorBase(Context mContext, Camera mCamera) {
         mSensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
         aSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         registerSensorListener();
@@ -50,7 +49,6 @@ public class CameraSensorManager extends CameraManager implements SensorEventLis
         if (deltaX > 1 || deltaY > 1 || deltaZ > 1) {
             //Log.i(TAG, "deltaX = "+deltaX+", deltaY = "+deltaY+", deltaZ = "+deltaZ);
             //Log.i(TAG, "onSensorChanged 聚焦成功...");
-            this.autoFocus();
         }
 
         mLastX = x;
@@ -60,18 +58,6 @@ public class CameraSensorManager extends CameraManager implements SensorEventLis
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
-
-    @Override
-    public void onPauseTasks() {
-        super.onPauseTasks();
-        unregisterSensorListener();
-    }
-
-    @Override
-    public void onDestroyTasks(){
-        super.onDestroyTasks();
 
     }
 

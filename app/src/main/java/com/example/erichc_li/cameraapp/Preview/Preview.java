@@ -4,12 +4,12 @@ import android.content.Context;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
+import com.example.erichc_li.cameraapp.CameraBase.CameraBase;
 
 public abstract class Preview {
 
     private Context mContext;
-    private CameraManager mCameraManager;
+    private CameraBase mCameraBase;
     private PreviewListener mPreviewListener;
 
     protected Preview(Context context) {
@@ -18,8 +18,8 @@ public abstract class Preview {
 
     public abstract View getView();
 
-    public void setCamera(CameraManager camera) {
-        mCameraManager = camera;
+    public void setCamera(CameraBase camera) {
+        mCameraBase = camera;
     }
 
     public interface PreviewListener {
@@ -31,7 +31,7 @@ public abstract class Preview {
     }
 
     protected void setSurface(Object surface) {
-        mCameraManager.setSurface(surface);
+        mCameraBase.setSurface(surface);
         mPreviewListener.onPreviewCreated(surface);
     }
 
@@ -41,11 +41,11 @@ public abstract class Preview {
 
     public void onPauseTasks() {
         mContext = null;
+        mCameraBase = null;
     }
 
     public void onDestroyTasks() {
-        mContext = null;
-        mCameraManager = null;
+
     }
 
 }

@@ -3,7 +3,7 @@ package com.example.erichc_li.cameraapp.UI;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.view.MotionEvent;
+import android.view.GestureDetector.OnGestureListener;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -12,7 +12,7 @@ public abstract class UI {
 
     private Activity mActivity;
     private CaptureButtonListener mCaptureButtonListener = null;
-    private TouchEventListener mTouchEventListener = null;
+    private int mCount = 0;
 
     protected UI(Activity activity) {
         mActivity = activity;
@@ -24,20 +24,14 @@ public abstract class UI {
 
     public abstract FrameLayout getFrameLayout();
 
+    public abstract void setGestureListener(OnGestureListener detector);
+
     public interface CaptureButtonListener {
         public abstract void onCaptureButtonClick();
     }
 
-    public interface TouchEventListener {
-        public abstract void onTouchEvent(View v, MotionEvent event);
-    }
-
     public void setCaptureButtonListener(CaptureButtonListener listener) {
         mCaptureButtonListener = listener;
-    }
-
-    public void setTouchEventListener(TouchEventListener listener) {
-        mTouchEventListener = listener;
     }
 
     protected Activity getActivity() {
@@ -57,9 +51,16 @@ public abstract class UI {
             mCaptureButtonListener.onCaptureButtonClick();
     }
 
-    protected void handleTouchEvent(View v, MotionEvent event) {
-        if (mTouchEventListener != null)
-            mTouchEventListener.onTouchEvent(v, event);
+    public void increaseTouchEvent() {
+        mCount++;
+    }
+
+    public void discreteTouchEvent() {
+        mCount--;
+    }
+
+    public int getTouchEvent() {
+        return mCount;
     }
 
     private AlertDialog createAlertDialog(String title, String msg, String buttonText) {

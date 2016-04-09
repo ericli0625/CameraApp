@@ -7,11 +7,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.hardware.Camera;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.example.erichc_li.cameraapp.CameraBase.CameraManager;
+import com.example.erichc_li.cameraapp.CameraBase.CameraBase;
 import com.example.erichc_li.cameraapp.UI.UI;
 
 import java.util.ArrayList;
@@ -23,18 +22,13 @@ public class FocusMetering {
 
     private Context mContext;
     private UI mUI;
-    private int maxZoomLevel;
-    private float oldDis;
-    private boolean mZoom = false;
+    private CameraBase mCameraBase;
 
-    private CameraManager mCameraManager;
+    public class FocusView extends View {
 
-    public class SquareView extends View {
-
-        private static final String TAG = "SquareView";
         private float mX, mY;
 
-        public SquareView(Context context, float x, float y) {
+        public FocusView(Context context, float x, float y) {
             super(context);
             mX = x;
             mY = y;
@@ -43,11 +37,11 @@ public class FocusMetering {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-            //Log.d(TAG, "Draw Square");
 
             Paint p = new Paint();
             p.setColor(Color.YELLOW);
             p.setAntiAlias(true);
+            p.setStrokeWidth(7);
             p.setStyle(Paint.Style.STROKE);
 
             canvas.drawCircle(mX, mY, 80, p);
@@ -55,54 +49,20 @@ public class FocusMetering {
         }
     }
 
-    public FocusMetering(Context context, CameraManager camera, UI ui) {
+    public FocusMetering(Context context, CameraBase camera, UI ui) {
         mContext = context;
-        mCameraManager = camera;
+        mCameraBase = camera;
         mUI = ui;
     }
 
-    public void handleZoom(MotionEvent event) {
-
-        Camera.Parameters params = mCameraManager.getCameraParameters();
-        maxZoomLevel = params.getMaxZoom();
-        int zoomValue = params.getZoom();
-        float newDis = getFingerSpacing(event);
-        if (newDis > getOldDis()) {
-            //zoom in
-//            Log.i(TAG, "zoom in...");
-            if (zoomValue < maxZoomLevel) {
-                zoomValue++;
-            }
-        } else if (newDis < getOldDis()) {
-            //zoom out
-//            Log.i(TAG, "zoom out...");
-            if (zoomValue > 0) {
-                zoomValue--;
-            }
-        }
-
-        setZoom(true);
-        setOldDis(newDis);
-        params.setZoom(zoomValue);
-        mCameraManager.setCameraParameters(params);
-    }
-
-    public void setOldDis(float value) {
-        oldDis = value;
-    }
-
-    public float getOldDis() {
-        return oldDis;
-    }
-
-    public void handleFocus(MotionEvent event, int action) {
+    public void handleFocus(MotionEvent event) {
         int pointerId = event.getPointerId(0);
         int pointerIndex = event.findPointerIndex(pointerId);
         // Get the pointer's current position
         final float x = event.getX(pointerIndex);
         final float y = event.getY(pointerIndex);
 
-        Camera.Parameters params = mCameraManager.getCameraParameters();
+        Camera.Parameters params = (Camera.Parameters) mCameraBase.getCameraParameters();
 
         List<String> supportedFocusModes = params.getSupportedFocusModes();
         if (supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
@@ -126,33 +86,15 @@ public class FocusMetering {
                 params.setMeteringAreas(meteringAreas);
             }
 
-            if (action == MotionEvent.ACTION_UP && !getZoom()) {
-                Log.i(TAG, "MotionEvent.ACTION_UP && zoom != true");
-                //Dismiss FocusView when touch screen
-                if (mUI.getFrameLayout().getChildCount() == 2) {
-                    mUI.getFrameLayout().removeViewAt(1);
-                }
-                SquareView mSquareView = new SquareView(mContext, x, y);
-                mUI.getFrameLayout().addView(mSquareView, 1);
-            } else if (action == MotionEvent.ACTION_UP && getZoom()) {
-                Log.i(TAG, "MotionEvent.ACTION_UP && zoom == true");
-                setZoom(false);
-            }
+            FocusView mFocusView = new FocusView(mContext, x, y);
+            mUI.getFrameLayout().addView(mFocusView, 1);
 
-            mCameraManager.increaseTouchEvent();
-            mCameraManager.setCameraParameters(params);
-            mCameraManager.autoFocus();
+            mCameraBase.setCameraParameters(params);
+            mCameraBase.autoFocus();
+            mUI.increaseTouchEvent();
 
         }
 
-    }
-
-    public void setZoom(boolean value) {
-        mZoom = value;
-    }
-
-    public boolean getZoom() {
-        return mZoom;
     }
 
     private Rect calculateTapArea(float x, float y, float coefficient) {
@@ -186,17 +128,6 @@ public class FocusMetering {
             return min;
         }
         return x;
-    }
-
-    /**
-     * Determine the space between the first two fingers
-     */
-    public static float getFingerSpacing(MotionEvent event) {
-        //Log.i(TAG, "event.getX(0) = "+event.getX(0)+", event.getX(1) = "+event.getX(1));
-        //Log.i(TAG, "event.getY(0) = "+event.getY(0)+", event.getY(1) = "+event.getY(1));
-        float x = event.getX(0) - event.getX(1);
-        float y = event.getY(0) - event.getY(1);
-        return (float) Math.sqrt(x * x + y * y);
     }
 
 }
