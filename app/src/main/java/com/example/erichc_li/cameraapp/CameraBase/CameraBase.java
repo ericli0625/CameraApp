@@ -2,9 +2,12 @@ package com.example.erichc_li.cameraapp.CameraBase;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PointF;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -50,9 +53,7 @@ public abstract class CameraBase {
 
     public abstract void takePicture();
 
-    public abstract void cancelAutoFocus();
-
-    public abstract void autoFocus();
+    public abstract PointF autoFocus(MotionEvent event);
 
     public abstract void setSurface(Object surface);
 
@@ -73,6 +74,18 @@ public abstract class CameraBase {
         File photo = new File(photoPath);
 
         return photo;
+    }
+
+    protected abstract Rect calculateTapArea(float x, float y, float coefficient);
+
+    protected int clamp(int x, int min, int max) {
+        if (x > max) {
+            return max;
+        }
+        if (x < min) {
+            return min;
+        }
+        return x;
     }
 
     public abstract void setPictureSize(int i);

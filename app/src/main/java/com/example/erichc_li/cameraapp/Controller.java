@@ -2,15 +2,13 @@ package com.example.erichc_li.cameraapp;
 
 import android.app.Activity;
 import android.graphics.ImageFormat;
-import android.hardware.Camera;
+import android.graphics.PointF;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraBase;
-import com.example.erichc_li.cameraapp.CameraBase.CameraBaseV1;
 import com.example.erichc_li.cameraapp.CameraBase.CameraFactory;
-import com.example.erichc_li.cameraapp.Component.FocusMeter.FocusMetering;
 import com.example.erichc_li.cameraapp.Preview.Preview;
 import com.example.erichc_li.cameraapp.Preview.PreviewFactory;
 import com.example.erichc_li.cameraapp.UI.SampleUI;
@@ -33,9 +31,6 @@ public class Controller {
 
     private CameraBase mCameraBase;
     private UI mUI;
-
-    //Component
-    private FocusMetering mFocusMetering;
 
     public Controller(Activity context) {
         mActivity = context;
@@ -61,11 +56,7 @@ public class Controller {
 
         Log.i(TAG, "initCamera...");
         mCameraBase = createCameraBase(CAMBASEV2);
-        if (mCameraBase.getCamera() != null) {
-            mCameraBase.setPictureSize(ImageFormat.JPEG);
-        } else {
-            Log.i(TAG, "mCamera is null");
-        }
+        mCameraBase.setPictureSize(ImageFormat.JPEG);
 
     }
 
@@ -105,7 +96,9 @@ public class Controller {
         @Override
         public void onPreviewCreated(Object surface) {
             Log.i(TAG, "StartPreview...");
-            mCameraBase.startPreview();
+            if (mCameraBase.getCamera() != null) {
+                mCameraBase.startPreview();
+            }
         }
     };
 
@@ -132,12 +125,9 @@ public class Controller {
 
     public void configComponent() {
 
-        if (false) {
-            Log.i(TAG, "configComponent...");
-            mFocusMetering = new FocusMetering(mActivity, mCameraBase, mUI);
-            mUI.setGestureListener(mGestureListener);
-            mCameraBase.setTouchEventListener(mTouchFocusListener);
-        }
+        Log.i(TAG, "configComponent...");
+        mUI.setGestureListener(mGestureListener);
+        mCameraBase.setTouchEventListener(mTouchFocusListener);
 
     }
 
@@ -146,15 +136,17 @@ public class Controller {
         @Override
         public void onTouchFocus(boolean success) {
 
-//            Log.i(TAG, "mTouchFocusListener onTouchFocus() E");
+            Log.i(TAG, "mTouchFocusListener onTouchFocus() E");
             Log.i(TAG, success ? "聚焦成功..." : "聚焦失敗...");
 
             //Dismiss FocusView when focused
+            Log.i(TAG, "mTouchFocusListenerm UI.getTouchEvent()" + mUI.getTouchEvent() + ", getChildCount()" + mUI.getFrameLayout().getChildCount());
+
             if (mUI.getFrameLayout().getChildCount() == 2 && mUI.getTouchEvent() == 1) {
                 mUI.getFrameLayout().removeViewAt(1);
             }
             mUI.discreteTouchEvent();
-//            Log.i(TAG, "mTouchFocusListener onTouchFocus() X");
+            Log.i(TAG, "mTouchFocusListener onTouchFocus() X");
         }
 
     };
@@ -178,8 +170,10 @@ public class Controller {
             if (mUI.getFrameLayout().getChildCount() == 2) {
                 mUI.getFrameLayout().removeViewAt(1);
             }
-            mCameraBase.cancelAutoFocus();
-            mFocusMetering.handleFocus(event);
+
+            PointF mPointF = mCameraBase.autoFocus(event);
+            mUI.increaseTouchEvent(mPointF);
+
             return false;
         }
 
@@ -238,7 +232,6 @@ public class Controller {
         mPreview = null;
         mCameraBase = null;
         mUI = null;
-        mFocusMetering = null;
 
     }
 

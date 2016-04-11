@@ -5,6 +5,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.AudioManager;
@@ -12,6 +14,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.widget.Toast;
@@ -19,6 +22,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CameraBaseV1 extends CameraBase {
@@ -29,9 +33,11 @@ public class CameraBaseV1 extends CameraBase {
     Camera.Parameters parameters;
     private int mRotation;
     private boolean safeToTakePicture = false;
+    private Context mContext;
 
     public CameraBaseV1(Context context) {
         super(context);
+        mContext = context;
         openCamera();
     }
 
@@ -125,13 +131,12 @@ public class CameraBaseV1 extends CameraBase {
         }
     }
 
-    @Override
-    public void cancelAutoFocus() {
+    private void cancelAutoFocus() {
         mCamera.cancelAutoFocus();
     }
 
-    @Override
-    public void autoFocus() {
+
+    private void autoFocus() {
         mCamera.autoFocus(myAutoFocusCallback);
     }
 
@@ -165,6 +170,7 @@ public class CameraBaseV1 extends CameraBase {
 
     }
 
+    @Override
     public void takePicture() {
         if (safeToTakePicture) {
             mCamera.takePicture(shutterCallback, rawPictureCallback, photoCallback);
@@ -260,6 +266,72 @@ public class CameraBaseV1 extends CameraBase {
         parameters.setPictureSize(w, h);
         setCameraParameters(parameters);
         Toast.makeText(getContext().getApplicationContext(), w + "*" + h, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public PointF autoFocus(MotionEvent event) {
+        int pointerId = event.getPointerId(0);
+        int pointerIndex = event.findPointerIndex(pointerId);
+        // Get the pointer's current position
+        final float x = event.getX(pointerIndex);
+        final float y = event.getY(pointerIndex);
+
+        Camera.Parameters params = getCameraParameters();
+
+        List<String> supportedFocusModes = params.getSupportedFocusModes();
+        if (supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+
+            Rect focusRect = calculateTapArea(x, y, 1f);
+            Rect meteringRect = calculateTapArea(x, y, 1.5f);
+
+            if (params.getMaxNumFocusAreas() > 0) {
+                List<Camera.Area> focusAreas = new ArrayList<Camera.Area>();
+                focusAreas.add(new Camera.Area(focusRect, 1000));
+
+                params.setFocusAreas(focusAreas);
+            }
+
+            if (params.getMaxNumMeteringAreas() > 0) {
+                List<Camera.Area> meteringAreas = new ArrayList<Camera.Area>();
+                meteringAreas.add(new Camera.Area(meteringRect, 1000));
+
+                params.setMeteringAreas(meteringAreas);
+            }
+
+            setCameraParameters(params);
+
+            cancelAutoFocus();
+            autoFocus();
+
+        }
+
+        return new PointF(x, y);
+    }
+
+    @Override
+    protected Rect calculateTapArea(float x, float y, float coefficient) {
+        float focusAreaSize = 300;
+        int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
+
+        int centerX = (int) (((x / ((Activity) mContext).getWindowManager().getDefaultDisplay().getWidth()) * 2000) - 1000);
+        int centerY = (int) (((y / ((Activity) mContext).getWindowManager().getDefaultDisplay().getHeight()) * 2000) - 1000);
+
+        //Log.i(TAG, "X = " +x+", Y = "+y);
+        //Log.i(TAG, "(this.getWidth()) = " +  (this.getWidth()) + ", (this.getHeight()) = " + (this.getHeight()));
+        //Log.i(TAG, "(x / this.getWidth()) = " +  (x / this.getWidth()) + ", (y / this.getHeight()) = " + (y / this.getHeight()));
+
+        //Log.i(TAG, "centerX = " +centerX+", centerY = "+centerY);
+
+        int left = clamp(centerX - areaSize / 2, -1000, 1000);
+        int right = clamp(left + areaSize, -1000, 1000);
+        int top = clamp(centerY - areaSize / 2, -1000, 1000);
+        int bottom = clamp(top + areaSize, -1000, 1000);
+
+        //Log.i(TAG, "left = " +left + ", top = " +top+ ", right = "+right +", bottom = "+bottom);
+
+        return new Rect(left, top, right, bottom);
     }
 
     @Override

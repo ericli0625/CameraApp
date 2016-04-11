@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -21,6 +23,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.DngCreator;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.MeteringRectangle;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
@@ -29,6 +32,7 @@ import android.os.HandlerThread;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.util.Size;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -135,6 +139,7 @@ public class CameraBaseV2 extends CameraBase {
         @Override
         public void onOpened(CameraDevice camera) {
             mCamera = camera;
+            startPreview();
         }
 
         @Override
@@ -274,11 +279,7 @@ public class CameraBaseV2 extends CameraBase {
     private CameraCaptureSession.StateCallback mSessionStateCallback = new CameraCaptureSession.StateCallback() {
         @Override
         public void onConfigured(CameraCaptureSession session) {
-            try {
-                updatePreview(session);
-            } catch (CameraAccessException e) {
-                e.printStackTrace();
-            }
+            updatePreview(session);
         }
 
         @Override
@@ -287,7 +288,7 @@ public class CameraBaseV2 extends CameraBase {
         }
     };
 
-    private void updatePreview(CameraCaptureSession session) throws CameraAccessException {
+    private void updatePreview(CameraCaptureSession session) {
 
         // When the session is ready, we start displaying the preview.
         mPreviewSession = session;
@@ -362,13 +363,70 @@ public class CameraBaseV2 extends CameraBase {
     };
 
     @Override
-    public void cancelAutoFocus() {
+    public PointF autoFocus(MotionEvent event) {
+        int pointerId = event.getPointerId(0);
+        int pointerIndex = event.findPointerIndex(pointerId);
+        // Get the pointer's current position
+        final float x = event.getX(pointerIndex);
+        final float y = event.getY(pointerIndex);
 
+        Rect mMeteringRect = calculateTapArea(x, y, 1);
+
+        MeteringRectangle meteringRectangle = new MeteringRectangle(mMeteringRect, 500);
+        MeteringRectangle[] meteringRectangleArr = {meteringRectangle};
+
+        CaptureRequest.Builder mFocusBuilder = null;
+
+        try {
+            mFocusBuilder = mCamera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            Surface mTempSurface = new Surface(mSurface);
+            mFocusBuilder.addTarget(mTempSurface);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+
+//        mFocusBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+
+        mFocusBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, meteringRectangleArr);
+        mFocusBuilder.set(CaptureRequest.CONTROL_AE_REGIONS, meteringRectangleArr);
+
+        mFocusBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+        mFocusBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+        mFocusBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CameraMetadata.CONTROL_AE_PRECAPTURE_TRIGGER_START);
+
+        try {
+            mPreviewSession.setRepeatingRequest(mFocusBuilder.build(), null, mCameraHandler);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "autoFocus");
+
+        return new PointF(x, y);
     }
 
     @Override
-    public void autoFocus() {
-
+    protected Rect calculateTapArea(float x, float y, float coefficient) {
+        Rect rect = mCameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+//        Log.i(TAG, "SENSOR_INFO_ACTIVE_ARRAY_SIZE,,,,,,,,rect.left--->" + rect.left + ",,,rect.top--->" + rect.top + ",,,,rect.right--->" + rect.right + ",,,,rect.bottom---->" + rect.bottom);
+        Size size = mCameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
+//        Log.i(TAG, "mCameraCharacteristics,,,,size.getWidth()--->" + size.getWidth() + ",,,size.getHeight()--->" + size.getHeight());
+        int areaSize = 200;
+        int right = rect.right;
+        int bottom = rect.bottom;
+        int viewWidth = ((Activity) getContext()).getWindow().getWindowManager().getDefaultDisplay().getWidth();
+        int viewHeight = ((Activity) getContext()).getWindow().getWindowManager().getDefaultDisplay().getHeight();
+        int ll, rr;
+        Rect newRect;
+        int centerX = (int) x;
+        int centerY = (int) y;
+        ll = ((centerX * right) - areaSize) / viewWidth;
+        rr = ((centerY * bottom) - areaSize) / viewHeight;
+        int focusLeft = clamp(ll, 0, right);
+        int focusBottom = clamp(rr, 0, bottom);
+//        Log.i(TAG, "focusLeft--->" + focusLeft + ",,,focusTop--->" + focusBottom + ",,,focusRight--->" + (focusLeft + areaSize) + ",,,focusBottom--->" + (focusBottom + areaSize));
+        newRect = new Rect(focusLeft, focusBottom, focusLeft + areaSize, focusBottom + areaSize);
+        return newRect;
     }
 
     @Override
@@ -448,7 +506,7 @@ public class CameraBaseV2 extends CameraBase {
          */
         private final CameraCharacteristics mCharacteristics;
 
-        ImageSaver(Image image,File picPath, CaptureResult result, CameraCharacteristics characteristics){
+        ImageSaver(Image image, File picPath, CaptureResult result, CameraCharacteristics characteristics) {
             mImage = image;
             mPicPath = picPath;
             mCaptureResult = result;
@@ -470,7 +528,7 @@ public class CameraBaseV2 extends CameraBase {
                     Bitmap pictureTaken = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     Matrix matrix = new Matrix();
                     matrix.preRotate(90);
-                    pictureTaken = Bitmap.createBitmap(pictureTaken ,0,0, pictureTaken.getWidth(), pictureTaken.getHeight(),matrix,true);
+                    pictureTaken = Bitmap.createBitmap(pictureTaken, 0, 0, pictureTaken.getWidth(), pictureTaken.getHeight(), matrix, true);
 
                     try {
                         output = new FileOutputStream(mPicPath.getPath());
@@ -515,7 +573,7 @@ public class CameraBaseV2 extends CameraBase {
 
             }
 
-            if(success){
+            if (success) {
                 galleryAddPic(mPicPath);
             }
 

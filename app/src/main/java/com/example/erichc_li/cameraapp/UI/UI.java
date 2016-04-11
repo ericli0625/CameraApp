@@ -2,7 +2,13 @@ package com.example.erichc_li.cameraapp.UI;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PointF;
+import android.util.Log;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.View;
 import android.view.WindowManager;
@@ -51,8 +57,37 @@ public abstract class UI {
             mCaptureButtonListener.onCaptureButtonClick();
     }
 
-    public void increaseTouchEvent() {
+    public class FocusView extends View {
+
+        private float mX, mY;
+
+        public FocusView(Context context, PointF mPointF) {
+            super(context);
+            mX = mPointF.x;
+            mY = mPointF.y;
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+
+            Paint p = new Paint();
+            p.setColor(Color.YELLOW);
+            p.setAntiAlias(true);
+            p.setStrokeWidth(7);
+            p.setStyle(Paint.Style.STROKE);
+
+            canvas.drawCircle(mX, mY, 80, p);
+
+        }
+    }
+
+    public void increaseTouchEvent(PointF mPointF) {
+        FocusView mFocusView = new FocusView(mActivity, mPointF);
+        getFrameLayout().addView(mFocusView, 1);
+        Log.i("Eric", "mTouchFocusListener increaseTouchEvent() X " + mCount);
         mCount++;
+        Log.i("Eric", "mTouchFocusListener increaseTouchEvent() E " + mCount);
     }
 
     public void discreteTouchEvent() {
