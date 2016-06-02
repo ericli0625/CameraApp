@@ -91,6 +91,9 @@ public abstract class UI {
     }
 
     public void discreteTouchEvent() {
+        if (getFrameLayout().getChildCount() == 2 && getTouchEvent() == 1) {
+            getFrameLayout().removeViewAt(1);
+        }
         mCount--;
     }
 

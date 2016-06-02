@@ -6,6 +6,7 @@ import android.graphics.PointF;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
 
 import com.example.erichc_li.cameraapp.CameraBase.CameraBase;
 import com.example.erichc_li.cameraapp.CameraBase.CameraFactory;
@@ -55,7 +56,7 @@ public class Controller {
     private void initCamera() {
 
         Log.i(TAG, "initCamera...");
-        mCameraBase = createCameraBase(CAMBASEV2);
+        mCameraBase = createCameraBase(CAMBASEV1);
         mCameraBase.setPictureSize(ImageFormat.JPEG);
 
     }
@@ -139,12 +140,6 @@ public class Controller {
             Log.i(TAG, "mTouchFocusListener onTouchFocus() E");
             Log.i(TAG, success ? "聚焦成功..." : "聚焦失敗...");
 
-            //Dismiss FocusView when focused
-            Log.i(TAG, "mTouchFocusListenerm UI.getTouchEvent()" + mUI.getTouchEvent() + ", getChildCount()" + mUI.getFrameLayout().getChildCount());
-
-            if (mUI.getFrameLayout().getChildCount() == 2 && mUI.getTouchEvent() == 1) {
-                mUI.getFrameLayout().removeViewAt(1);
-            }
             mUI.discreteTouchEvent();
             Log.i(TAG, "mTouchFocusListener onTouchFocus() X");
         }
@@ -167,8 +162,12 @@ public class Controller {
         @Override
         public boolean onSingleTapUp(MotionEvent event) {
 //            Log.i(TAG, "onSingleTapUp");
-            if (mUI.getFrameLayout().getChildCount() == 2) {
-                mUI.getFrameLayout().removeViewAt(1);
+
+            for (int i = 0; i < mUI.getFrameLayout().getChildCount(); i++) {
+                View view = mUI.getFrameLayout().getChildAt(i);
+                if (view instanceof UI.FocusView) {
+                    mUI.getFrameLayout().removeView(view);
+                }
             }
 
             PointF mPointF = mCameraBase.autoFocus(event);
